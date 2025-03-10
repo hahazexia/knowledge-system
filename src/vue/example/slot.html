@@ -1,0 +1,27 @@
+<body>
+  <div id="app">
+    <test>
+      <template v-slot:test="slotData">
+        <p>test content {{slotData.testData}}</p>
+      </template>
+    </test>
+  </div>
+  </div>
+</body>
+<script src="./vue.js"></script>
+<script>
+  new Vue({
+    name: "App",
+    el: '#app',
+    components: {
+      test: {
+        template: "<div><slot name='test' :testData='count' ></slot></div>",
+        data () {
+          return {
+            count: 1
+          }
+        }
+      }
+    }
+  })
+</script>
