@@ -12,33 +12,7 @@
 </body>
 
 <script>
-  function factorial(n) {
-    return n <= 1 ? 1 : factorial(n - 1) * n;
-  }
 
-  let cache = {};
-  function fibnacci(n) {
-    if (n === 1) return 1;
-    if (n === 2) return 1;
-    if (cache[n]) return cache[n];
-    return cache[n] = fibnacci(n - 1) + fibnacci(n - 2);
-  }
-
-  function hanota(A, B, C) {
-    let len = A.length;
-
-    function move(l, a, b, c) {
-      if (len === 1) {
-        c.push(a.pop());
-      } else {
-        move(l - 1, a, c, b);
-        c.push(a.pop());
-        move(l - 1, b, a, c);
-      }
-    }
-
-    return move(len, A, B, C);
-  }
 </script>
 
 </html>
