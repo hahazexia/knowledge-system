@@ -133,6 +133,8 @@
         - [keep-alive](./vue/keep_alive.md)
         - [slot](./vue/slot.md)
         - [v-model](./vue/vmodel.md)
+    - [vue3原理]()
+        - [基本概念](./vue/v3_base.md)
 
 - [react]()
     - [使用]()
