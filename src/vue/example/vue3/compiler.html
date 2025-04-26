@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.5.13/vue.global.js"></script>
+</head>
+
+<body>
+    <div id="app"></div>
+</body>
+<script>
+    const { sompile, createApp } = Vue;
+
+    const html = `
+    <div class="test">hello compiler</div>
+`;
+
+    const renderFn = compile(html);
+
+    const app = createApp({
+        render: renderFn
+    });
+
+    app.mount('#app');
+</script>
+
+</html>

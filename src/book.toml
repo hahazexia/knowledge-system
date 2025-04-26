@@ -3,6 +3,3 @@ authors = ["hahazexia"]
 language = "en"
 multilingual = false
 src = "src"
-title = "knowledge-system"
-
-# delete book dir and mdbook build
