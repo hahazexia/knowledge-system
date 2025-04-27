@@ -135,6 +135,7 @@
         - [v-model](./vue/vmodel.md)
     - [vue3原理]()
         - [基本概念](./vue/v3_base.md)
+        - [源码结构](./vue/v3_prototype.md)
 
 - [react]()
     - [使用]()
