@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "rootDir": ".", // 根目录
+    "strict": false, // 严格模式
+    "moduleResolution": "node", // 指定类型脚本如何从给定的模块说明符查找文件
+    "esModuleInterop": true,
+    "target": "ES5", // js语言版本
+    "noUnusedLocals": false, // 允许未读取局部变量
+    "noUnusedParameters": false, // 允许未读取的参数
+    "resolveJsonModule": true, // 允许解析 json
+    "downlevelIteration": true, // 支持语法迭代
+    "noImplicitAny": false, // 允许使用隐式的 any 类型 （有助于简化 ts 复杂度，更专注逻辑本身）
+    "module": "ESNext", // 模块化
+    "removeComments": false, // 转化为 js 时从 ts 文件中删除所有注释
+    "sourceMap": false, // 禁用 sourceMap
+    "lib": [
+      "ESNext",
+      "DOM"
+    ],
+    "baseUrl": ".",
+    "paths": { // 指定路径映射
+      "@vue/*": [
+        "packages/*/src"
+      ]
+    },
+  },
+  "include": [
+    "packages/*/src"
+  ]
+}
