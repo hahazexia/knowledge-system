@@ -141,6 +141,7 @@
   - [vue3 原理]()
     - [基本概念](./vue/v3_1_base.md)
     - [源码结构](./vue/v3_2_prototype.md)
+    - [响应式核心原则](./vue/v3_3_reactivity_base.md)
 
 - [react]()
 
