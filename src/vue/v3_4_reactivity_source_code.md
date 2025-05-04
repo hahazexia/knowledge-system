@@ -5,14 +5,14 @@
 ```js
 const { reactive, effect } = Vue;
 
-const obj = reactive({ name: "张三" });
+const obj = reactive({ name: '张三' });
 
 effect(() => {
-  document.querySelector("#app").innerHTML = obj.name;
+  document.querySelector('#app').innerHTML = obj.name;
 });
 
 setTimeout(() => {
-  obj.name = "李四";
+  obj.name = '李四';
 }, 2000);
 ```
 
@@ -434,9 +434,9 @@ reactive 源码有两条主线：
           // collection being cleared
           // trigger all effects for target
           deps = [...depsMap.values()];
-        } else if (key === "length" && isArray(target)) {
+        } else if (key === 'length' && isArray(target)) {
           depsMap.forEach((dep, key) => {
-            if (key === "length" || key >= (newValue as number)) {
+            if (key === 'length' || key >= (newValue as number)) {
               deps.push(dep);
             }
           });
@@ -456,7 +456,7 @@ reactive 源码有两条主线：
                 }
               } else if (isIntegerKey(key)) {
                 // new index added to array -> length changes
-                deps.push(depsMap.get("length"));
+                deps.push(depsMap.get('length'));
               }
               break;
             case TriggerOpTypes.DELETE:
@@ -544,5 +544,8 @@ reactive 源码有两条主线：
 ## 总结
 
 1. 创建 proxy
+   - 生成代理对象 proxy，并且设置 proxy 的 getter 和 setter
 2. 收集 effect 依赖
+   - effect 中创建 ReactiveEffect 对象，执行 fn，触发 proxy 的 getter，getter 中收集依赖，建立当前 ReactiveEffect 与指定`被代理对象`的`指定属性`之间的关系。
 3. 触发收集的依赖
+   - 当改变代理对象的属性的时候，触发 setter，通过刚才收集到的依赖，很容易的找到指定`被代理对象`的`指定属性`对应的 ReactiveEffect 对象，直接触发 ReactiveEffect 上的 fn 也就是执行之前传递给 effect 的匿名函数

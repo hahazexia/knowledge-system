@@ -12,12 +12,12 @@
 
 ```js
 let obj = {
-  name: "张三",
+  name: '张三',
 };
 
 const map = new Map();
 
-map.set(obj, "value");
+map.set(obj, 'value');
 
 obj = null;
 
@@ -42,7 +42,7 @@ obj = null;
 ## reactive.ts
 
 ```ts
-import { mutableHandlers } from "./baseHandlers";
+import { mutableHandlers } from './baseHandlers';
 
 /**
  * 响应性 Map 缓存对象
@@ -89,7 +89,7 @@ function createReactiveObject(
 ## baseHandlers.ts
 
 ```ts
-import { track, trigger } from "./effect";
+import { track, trigger } from './effect';
 
 /**
  * getter 方法
@@ -135,8 +135,8 @@ export const mutableHandlers: ProxyHandler<object> = {
 ## effect.ts
 
 ```ts
-import { isArray } from "@vue/shared";
-import { createDep, Dep } from "./dep";
+import { isArray } from '@vue/shared';
+import { createDep, Dep } from './dep';
 
 type KeyToDepMap = Map<any, Dep>;
 /**
@@ -250,7 +250,7 @@ export function triggerEffect(effect: ReactiveEffect) {
 ## dep.ts
 
 ```ts
-import { ReactiveEffect } from "./effect";
+import { ReactiveEffect } from './effect';
 
 export type Dep = Set<ReactiveEffect>;
 
