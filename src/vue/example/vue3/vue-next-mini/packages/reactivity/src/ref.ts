@@ -1,6 +1,6 @@
 import { hasChanged } from '@vue/shared';
 import { createDep } from './dep';
-import { activeEffect, trackEffects, triggerEffect } from './effect';
+import { activeEffect, trackEffects, triggerEffect, triggerEffects } from './effect';
 import { toReactive } from './reactive';
 
 export interface Ref<T = any> {
@@ -78,7 +78,7 @@ export function trackRefValue(ref) {
  */
 export function triggerRefValue(ref) {
   if (ref.dep) {
-    triggerEffect(ref.dep);
+    triggerEffects(ref.dep);
   }
 }
 

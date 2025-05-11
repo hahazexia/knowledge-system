@@ -146,6 +146,10 @@
     - [实现响应式](./vue/v3_5_my_reactivity.md)
     - [ref 源码](./vue/v3_6_ref.md)
     - [实现 ref](./vue/v3_7_my_ref.md)
+    - [computed 源码](./vue/v3_8_computed.md)
+    - [实现 computed](./vue/v3_9_my_computed.md)
+    - [watch 源码](./vue/v3_10_watch.md)
+    - [实现 watch](./vue/v3_11_my_watch.md)
 
 - [react]()
 

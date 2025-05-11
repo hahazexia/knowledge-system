@@ -1,6 +1,10 @@
 import { mutableHandlers } from "./baseHandlers";
 import { isObject } from '@vue/shared';
 
+export const enum ReactiveFlags {
+  IS_REACTIVE = '__v_isReactive'
+}
+
 /**
  * 响应性 Map 缓存对象
  * key：target
@@ -37,6 +41,8 @@ function createReactiveObject(
   // 未被代理则生成 proxy 实例
   const proxy = new Proxy(target, baseHandlers);
 
+  proxy[ReactiveFlags.IS_REACTIVE] = true;
+
   // 缓存代理对象
   proxyMap.set(target, proxy);
 
@@ -45,4 +51,8 @@ function createReactiveObject(
 
 export const toReactive = <T extends unknown>(value: T): T => {
   return isObject(value) ? reactive(value as object) : value;
+}
+
+export function isReactive(value): boolean {
+  return !!(value && value[ReactiveFlags.IS_REACTIVE]);
 }

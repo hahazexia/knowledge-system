@@ -549,3 +549,9 @@ reactive 源码有两条主线：
    - effect 中创建 ReactiveEffect 对象，执行 fn，触发 proxy 的 getter，getter 中收集依赖，建立当前 ReactiveEffect 与指定`被代理对象`的`指定属性`之间的关系。
 3. 触发收集的依赖
    - 当改变代理对象的属性的时候，触发 setter，通过刚才收集到的依赖，很容易的找到指定`被代理对象`的`指定属性`对应的 ReactiveEffect 对象，直接触发 ReactiveEffect 上的 fn 也就是执行之前传递给 effect 的匿名函数
+
+- 有点像发布订阅模式，但不完全一样
+  - 有三个模块互相作用实现了响应式，1. 响应式数据 proxy 对象 2. effect 副作用函数（背后是 reactiveEffect）3. targetMap 结构
+  - proxy 的 getter 收集依赖，依赖存在 targetMap 结构中，setter 触发依赖，从 targetMap 结构中找到对应依赖，也就找到了 effect 副作用函数
+  - targetMap 的结构是两层，第一层 key 是响应式数据，value 是一个 map 对象，第二层 map 对象的 key 是响应式数据的属性，value 是收集到的 reactiveEffect 组成的 set 数组
+  - 所以，响应式数据 proxy 对象就是发布者，effect 函数是订阅者，只是订阅关系没有放到 proxy 对象中，而是放在了一个 weakMap 结构中单独存储（targetMap）
