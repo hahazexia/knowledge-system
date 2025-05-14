@@ -150,6 +150,9 @@
     - [实现 computed](./vue/v3_9_my_computed.md)
     - [watch 源码](./vue/v3_10_watch.md)
     - [实现 watch](./vue/v3_11_my_watch.md)
+    - [runtime 核心原则](./vue/v3_12_runtime_base.md)
+    - [runtime h 函数源码](./vue/v3_13_runime_h_source_code.md)
+    - [实现 runtime h 函数](./vue/v3_14_my_runime_h.md)
 
 - [react]()
 

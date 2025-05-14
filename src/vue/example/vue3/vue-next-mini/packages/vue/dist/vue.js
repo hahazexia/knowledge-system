@@ -70,6 +70,11 @@ var Vue = (function (exports) {
     var isFunction = function (val) {
         return typeof val === 'function';
     };
+    var extend = Object.assign;
+    var EMPTY_OBJ = {};
+    var isString = function (val) {
+        return typeof val === 'string';
+    };
 
     /**
      * 依据 effects 生成 dep 实例
@@ -87,9 +92,14 @@ var Vue = (function (exports) {
      * 		2. `value`：指定对象的指定属性的执行函数生成的 ReactiveEffect 实例组成的 Set 数组
      */
     var targetMap = new WeakMap();
-    function effect(fn) {
+    function effect(fn, options) {
         var _effect = new ReactiveEffect(fn);
-        _effect.run();
+        if (options) {
+            extend(_effect, options);
+        }
+        if (!options || !options.lazy) {
+            _effect.run();
+        }
     }
     var activeEffect;
     var ReactiveEffect = /** @class */ (function () {
@@ -102,6 +112,7 @@ var Vue = (function (exports) {
             activeEffect = this;
             return this.fn();
         };
+        ReactiveEffect.prototype.stop = function () { };
         return ReactiveEffect;
     }());
     /**
@@ -159,7 +170,7 @@ var Vue = (function (exports) {
         triggerEffects(dep);
     }
     /**
-     * 依次触发 dep 中保存的依赖
+     * 触发 dep 中保存的依赖
      */
     function triggerEffects(dep) {
         var e_1, _a, e_2, _b;
@@ -170,6 +181,8 @@ var Vue = (function (exports) {
             //  for (const effect of effects) {
             //   triggerEffect(effect);
             //  }
+            // 当 effect 里有两次使用 computed 变量，就会让 computedRefImpl 收集到两个依赖，第一个是 effect 的 reactiveEffect，第二个就是 computedRefImpl 自己的 reactiveEffect。当触发更新的时候，按照顺序执行，就会陷入无限循环。因为最开始先执行 computedRefImpl.reactiveEffect 会将 dirty 变成 true，然后再通过 computedRefImpl.dep 顺序执行两个依赖，第一先执行 effect.reactiveEffect 的时候会触发 computedRefImpl.getter，将 dirty 重新变成 false，然后第二再执行 computedRefImpl.reactiveEffect 这时候 dirty 是 false，又会重新找到 computedRefImpl.dep 两个依赖再次执行，无限循环。
+            // 所以修改成先优先执行 computedRefImpl.reactiveEffect, 这样的话因为还没有执行 effect.reactiveEffect 触发 computedRefImpl.getter 去改变 dirty 的值，dirty 就不会变成 false，因此碰到第二次 computedRefImpl.reactiveEffect 的时候，会跳过，避免了无限循环
             for (var effects_1 = __values(effects), effects_1_1 = effects_1.next(); !effects_1_1.done; effects_1_1 = effects_1.next()) {
                 var effect_1 = effects_1_1.value;
                 if (effect_1.computed) {
@@ -270,6 +283,7 @@ var Vue = (function (exports) {
         }
         // 未被代理则生成 proxy 实例
         var proxy = new Proxy(target, baseHandlers);
+        proxy["__v_isReactive" /* ReactiveFlags.IS_REACTIVE */] = true;
         // 缓存代理对象
         proxyMap.set(target, proxy);
         return proxy;
@@ -277,6 +291,9 @@ var Vue = (function (exports) {
     var toReactive = function (value) {
         return isObject(value) ? reactive(value) : value;
     };
+    function isReactive(value) {
+        return !!(value && value["__v_isReactive" /* ReactiveFlags.IS_REACTIVE */]);
+    }
 
     /**
      * ref 函数
@@ -405,10 +422,232 @@ var Vue = (function (exports) {
         return cRef;
     }
 
+    // 对应 promise 的 pending 状态
+    var isFlushPending = false;
+    /**
+     * promise.resolve()
+     */
+    var resolvedPromise = Promise.resolve();
+    /**
+     * 待执行的任务队列
+     */
+    var pendingPreFlushCbs = [];
+    /**
+     * 队列预处理函数
+     */
+    function queuePreFlushCb(cb) {
+        queueCb(cb, pendingPreFlushCbs);
+    }
+    /**
+     * 队列处理函数
+     */
+    function queueCb(cb, pendingQueue) {
+        // 将所有的回调函数，放入队列中
+        pendingQueue.push(cb);
+        queueFlush();
+    }
+    /**
+     * 将队列任务执行放到 promise 微任务中执行
+     */
+    function queueFlush() {
+        if (!isFlushPending) {
+            isFlushPending = true;
+            resolvedPromise.then(flushJobs);
+        }
+    }
+    /**
+     * 处理队列
+     */
+    function flushJobs() {
+        isFlushPending = false;
+        flushPreFlushCbs();
+    }
+    /**
+     * 依次处理队列中的任务
+     */
+    function flushPreFlushCbs() {
+        if (pendingPreFlushCbs.length) {
+            // 去重
+            var activePreFlushCbs = __spreadArray([], __read(new Set(pendingPreFlushCbs)), false);
+            // 清空待执行的任务队列
+            pendingPreFlushCbs.length = 0;
+            // 循环调用 cb
+            for (var i = 0; i < activePreFlushCbs.length; i++) {
+                activePreFlushCbs[i]();
+            }
+        }
+    }
+
+    /**
+     * 指定的 watch 函数
+     * @param source 监听的响应性数据
+     * @param cb 回调函数
+     * @param options 配置对象
+     * @returns
+     */
+    function watch(source, cb, options) {
+        return doWatch(source, cb, options);
+    }
+    function doWatch(source, cb, _a) {
+        var _b = _a === void 0 ? EMPTY_OBJ : _a, immediate = _b.immediate, deep = _b.deep;
+        // 触发 getter 的指定函数
+        var getter;
+        // 判断 source 如果是响应式数据，设置 getter 为返回 source 的函数，并且 deep 默认为 true
+        if (isReactive(source)) {
+            getter = function () { return source; };
+            deep = true;
+        }
+        else {
+            getter = function () { };
+        }
+        // 存在回调函数并且 deep 为 true，就遍历触发响应式数据每一层属性的 getter 来收集依赖
+        if (cb && deep) {
+            var baseGetter_1 = getter;
+            getter = function () { return traverse(baseGetter_1()); };
+        }
+        // 旧值
+        var oldValue = {};
+        // job 函数本质上就是调用传递给 watch 的函数也就是 cb
+        var job = function () {
+            if (cb) {
+                var newValue = effect.run();
+                if (deep || hasChanged(newValue, oldValue)) {
+                    cb(newValue, oldValue);
+                    oldValue = newValue;
+                }
+            }
+        };
+        // 调度器，将 job 函数放入队列中，并且使用 promise 微任务来执行
+        var scheduler = function () { return queuePreFlushCb(job); };
+        var effect = new ReactiveEffect(getter, scheduler);
+        if (cb) {
+            // 如果传递了 immediate 就立即调用一次 cb
+            if (immediate) {
+                job();
+            }
+            else {
+                oldValue = effect.run();
+            }
+        }
+        else {
+            effect.run();
+        }
+        return function () {
+            effect.stop();
+        };
+    }
+    /**
+     * 遍历响应式对象所有属性，从而触发依赖收集
+     */
+    function traverse(value) {
+        if (!isObject(value)) {
+            return value;
+        }
+        for (var key in value) {
+            traverse(value[key]);
+        }
+        return value;
+    }
+
+    var Text = Symbol('Text');
+    var Comment = Symbol('Comment');
+    var Fragment = Symbol('Fragment');
+    function isVNode(val) {
+        return val ? val.__v_isVNode === true : false;
+    }
+    /**w
+     * 生成一个 VNode 对象，并返回
+     * @param type vnode.type
+     * @param props 标签属性或自定义属性
+     * @param children? 子节点
+     * @returns vnode 对象
+     */
+    function createVNode(type, props, children) {
+        // 通过 bit 位处理 shapeFlag 类型
+        var shapeFlag = isString(type)
+            ? 1 /* ShapeFlags.ELEMENT */
+            : isObject(type)
+                ? 4 /* ShapeFlags.STATEFUL_COMPONENT */
+                : 0;
+        return createBaseVNode(type, props, children, shapeFlag);
+    }
+    /**
+     * 构建基础 vnode
+     */
+    function createBaseVNode(type, props, children, shapeFlag) {
+        var vnode = {
+            __v_isVNode: true,
+            type: type,
+            props: props,
+            shapeFlag: shapeFlag,
+        };
+        normalizeChildren(vnode, children);
+        return vnode;
+    }
+    // 处理子节点
+    function normalizeChildren(vnode, children) {
+        var type = 0;
+        if (children == null) {
+            children = null;
+        }
+        else if (isArray(children)) {
+            type = 16 /* ShapeFlags.ARRAY_CHILDREN */;
+        }
+        else if (isObject(children)) ;
+        else if (isFunction(children)) ;
+        else {
+            children = String(children);
+            type = 8 /* ShapeFlags.TEXT_CHILDREN */;
+        }
+        vnode.children = children;
+        // 按位或赋值，等同于 vnode.shapeFlag = vnode.shapeFlag | type
+        vnode.shapeFlag |= type;
+    }
+
+    function h(type, propsOrChildren, children) {
+        // 获取用户传递的参数数量
+        var l = arguments.length;
+        // 如果用户只传递了两个参数，那么证明第二个参数可能是 props , 也可能是 children
+        if (l === 2) {
+            // 如果 第二个参数是对象，但不是数组。则第二个参数只有两种可能性：1. VNode 2.普通的 props
+            if (isObject(propsOrChildren) && !isArray(propsOrChildren)) {
+                // 如果是 VNode，则 第二个参数代表了 children
+                if (isVNode(propsOrChildren)) {
+                    return createVNode(type, null, [propsOrChildren]);
+                }
+                // 如果不是 VNode， 则第二个参数代表了 props
+                return createVNode(type, propsOrChildren, []);
+            }
+            else {
+                // 如果第二个参数是数组，则第二个参数代表了 children
+                return createVNode(type, null, propsOrChildren);
+            }
+        }
+        else {
+            // 如果用户传递了三个或以上的参数，那么证明第二个参数一定代表了 props
+            if (l > 3) {
+                // 如果参数在三个以上，则从第二个参数开始，把后续所有参数都作为 children
+                children = Array.prototype.slice.call(arguments, 2);
+            }
+            else if (l === 3 && isVNode(children)) {
+                // 如果传递的参数只有三个，则 children 是单纯的 children
+                children = [children];
+            }
+            // 触发 createVNode 方法，创建 VNode 实例
+            return createVNode(type, propsOrChildren, children);
+        }
+    }
+
+    exports.Comment = Comment;
+    exports.Fragment = Fragment;
+    exports.Text = Text;
     exports.computed = computed;
     exports.effect = effect;
+    exports.h = h;
+    exports.queuePreFlushCb = queuePreFlushCb;
     exports.reactive = reactive;
     exports.ref = ref;
+    exports.watch = watch;
 
     return exports;
 

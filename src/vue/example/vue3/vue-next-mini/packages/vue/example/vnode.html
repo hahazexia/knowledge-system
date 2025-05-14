@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="../dist/vue.js"></script>
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+  <script>
+    const { h, Text, Comment, Fragment } = Vue;
+
+    // dom 元素，子元素是 text 节点
+    const vnode = h(
+      'div',
+      {
+        class: 'test',
+      },
+      'hello render',
+    );
+
+    // dom 元素，子元素是数组
+    const vnode2 = h('p', [h('p', 'p1'), h('p', 'p2'), h('p', 'p3')]);
+
+    const component = {
+      render() {
+        const vnode_c = h('div', 'this is a component');
+        return vnode_c;
+      },
+    };
+    // 组件
+    const vnode3 = h(component);
+
+    // Text
+    const vnodeText = h(Text, 'this is a Text');
+    // Comment
+    const vnodeComment = h(Comment, 'this is a Comment');
+    // Fragment
+    const vnodeFragment = h(Fragment, 'this is a Fragment');
+
+    console.log(vnode, vnode2, vnode3, vnodeText, vnodeComment, vnodeFragment);
+  </script>
+</html>
