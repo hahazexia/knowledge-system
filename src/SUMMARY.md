@@ -153,6 +153,7 @@
     - [runtime 核心原则](./vue/v3_12_runtime_base.md)
     - [runtime h 函数源码](./vue/v3_13_runime_h_source_code.md)
     - [实现 runtime h 函数](./vue/v3_14_my_runime_h.md)
+    - [runtime renderer 源码](./vue/v3_15_renderer_source_code.md)
 
 - [react]()
 

@@ -7,3 +7,4 @@ export {
   Comment,
   Fragment,
 } from '@vue/runtime-core';
+export { render } from '@vue/runtime-dom';

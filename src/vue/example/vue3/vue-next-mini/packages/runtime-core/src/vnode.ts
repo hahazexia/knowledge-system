@@ -2,12 +2,17 @@ import { isArray, isFunction, isObject, isString } from '@vue/shared';
 import { normalizeClass } from 'packages/shared/src/normalizeProps';
 import { ShapeFlags } from 'packages/shared/src/shapeFlags';
 
+export function isSameVNodeType(n1: VNode, n2: VNode) {
+  return n1.type === n2.type && n1.key === n2.key;
+}
+
 export interface VNode {
   __v_isVNode: true;
   type: any;
   props: any;
   children: any;
   shapeFlag: number;
+  key: string;
 }
 
 export const Text = Symbol('Text');

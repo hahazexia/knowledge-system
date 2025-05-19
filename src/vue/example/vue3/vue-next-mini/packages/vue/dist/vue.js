@@ -63,7 +63,9 @@ var Vue = (function (exports) {
     };
 
     var isArray = Array.isArray;
-    var isObject = function (val) { return val !== null && typeof val === 'object'; };
+    var isObject = function (val) {
+        return val !== null && typeof val === 'object';
+    };
     var hasChanged = function (value, oldValue) {
         return Object.is(value, oldValue);
     };
@@ -549,6 +551,40 @@ var Vue = (function (exports) {
         return value;
     }
 
+    /**
+     * 规范化 class 类，处理 class 的增强
+     */
+    function normalizeClass(value) {
+        var res = '';
+        if (isString(value)) {
+            // 判断是否为 string，如果是 string 就不需要专门处理
+            res = value;
+        }
+        else if (isArray(value)) {
+            // 额外的数组增强。官方案例：https://cn.vuejs.org/guide/essentials/class-and-style.html#binding-to-arrays
+            for (var i = 0; i < value.length; i++) {
+                // 循环得到数组中的每个元素，通过 normalizeClass 方法进行迭代处理
+                var normalized = normalizeClass(value[i]);
+                if (normalized) {
+                    res += normalized + '';
+                }
+            }
+        }
+        else if (isObject(value)) {
+            // 额外的对象增强
+            for (var name_1 in value) {
+                // 把 value 当做 boolean 来看，拼接 name
+                if (value[name_1]) {
+                    res += name_1 + '';
+                }
+            }
+        }
+        return res;
+    }
+
+    function isSameVNodeType(n1, n2) {
+        return n1.type === n2.type && n1.key === n2.key;
+    }
     var Text = Symbol('Text');
     var Comment = Symbol('Comment');
     var Fragment = Symbol('Fragment');
@@ -563,6 +599,12 @@ var Vue = (function (exports) {
      * @returns vnode 对象
      */
     function createVNode(type, props, children) {
+        if (props) {
+            var kclass = props.class; props.style;
+            if (kclass && !isString(kclass)) {
+                props.class = normalizeClass(kclass);
+            }
+        }
         // 通过 bit 位处理 shapeFlag 类型
         var shapeFlag = isString(type)
             ? 1 /* ShapeFlags.ELEMENT */
@@ -638,6 +680,164 @@ var Vue = (function (exports) {
         }
     }
 
+    function createRenderer(options) {
+        return baseCreateRenderer(options);
+    }
+    function baseCreateRenderer(options) {
+        var hostInsert = options.insert, hostPatchProp = options.patchProp, hostCreateElement = options.createElement, hostSetElementText = options.setElementText, hostRemove = options.remove;
+        var processElement = function (oldVNode, newVNode, container, anchor) {
+            if (oldVNode == null) {
+                mountElement(newVNode, container, anchor);
+            }
+            else {
+                patchElement(oldVNode, newVNode);
+            }
+        };
+        var mountElement = function (vnode, container, anchor) {
+            var type = vnode.type, props = vnode.props, shapeFlag = vnode.shapeFlag;
+            var el = (vnode.el = hostCreateElement(type));
+            if (shapeFlag & 8 /* ShapeFlags.TEXT_CHILDREN */) {
+                hostSetElementText(el, vnode.children);
+            }
+            if (props) {
+                for (var key in props) {
+                    hostPatchProp(el, key, null, props[key]);
+                }
+            }
+            hostInsert(el, container, anchor);
+        };
+        var patchElement = function (oldVNode, newVNode) {
+            var el = (newVNode.el = oldVNode.el);
+            var oldProps = oldVNode.props || EMPTY_OBJ;
+            var newProps = newVNode.props || EMPTY_OBJ;
+            patchChildren(oldVNode, newVNode, el);
+            patchProps(el, newVNode, oldProps, newProps);
+        };
+        var patchChildren = function (oldVNode, newVNode, container, anchor) {
+            var c1 = oldVNode && oldVNode.children;
+            var prevShapeFlag = oldVNode ? oldVNode.shapeFlag : 0;
+            var c2 = newVNode && newVNode.children;
+            var shapeFlag = newVNode.shapeFlag;
+            if (shapeFlag & 8 /* ShapeFlags.TEXT_CHILDREN */) {
+                if (c2 !== c1) {
+                    // 都是文本，直接更新
+                    hostSetElementText(container, c2);
+                }
+            }
+            else {
+                if (prevShapeFlag & 16 /* ShapeFlags.ARRAY_CHILDREN */) ;
+                else {
+                    if (prevShapeFlag & 8 /* ShapeFlags.TEXT_CHILDREN */) {
+                        // 新不是 text，旧是 text，删除旧节点的文本
+                        hostSetElementText(container, '');
+                    }
+                }
+            }
+        };
+        var patchProps = function (el, vnode, oldProps, newProps) {
+            if (oldProps !== newProps) {
+                for (var key in newProps) {
+                    var next = newProps[key];
+                    var prev = oldProps[key];
+                    if (next !== prev) {
+                        hostPatchProp(el, key, prev, next);
+                    }
+                }
+                if (oldProps !== EMPTY_OBJ) {
+                    for (var key in oldProps) {
+                        if (!(key in newProps)) {
+                            hostPatchProp(el, key, oldProps[key], null);
+                        }
+                    }
+                }
+            }
+        };
+        var patch = function (oldVNode, newVNode, container, anchor) {
+            if (anchor === void 0) { anchor = null; }
+            if (oldVNode === newVNode) {
+                return;
+            }
+            if (oldVNode && !isSameVNodeType(oldVNode, newVNode)) {
+                unmount(oldVNode);
+                oldVNode = null;
+            }
+            var type = newVNode.type, shapeFlag = newVNode.shapeFlag;
+            switch (type) {
+                case Text:
+                    break;
+                case Comment:
+                    break;
+                case Fragment:
+                    break;
+                default:
+                    if (shapeFlag & 1 /* ShapeFlags.ELEMENT */) {
+                        processElement(oldVNode, newVNode, container, anchor);
+                    }
+            }
+        };
+        var unmount = function (vnode) {
+            hostRemove(vnode.el);
+        };
+        var render = function (vnode, container) {
+            if (vnode === null) ;
+            else {
+                patch(container._vnode || null, vnode, container);
+            }
+            container._vnode = vnode;
+        };
+        return {
+            render: render,
+        };
+    }
+
+    function patchClass(el, value) {
+        if (value === null) {
+            el.removeAttribute('class');
+        }
+        else {
+            el.className = value;
+        }
+    }
+
+    var patchProp = function (el, key, prevValue, nextValue) {
+        if (key === 'class') {
+            patchClass(el, nextValue);
+        }
+    };
+
+    var nodeOps = {
+        insert: function (child, parent, anchor) {
+            parent.insertBefore(child, anchor || null);
+        },
+        createElement: function (tag) {
+            var el = document.createElement(tag);
+            return el;
+        },
+        setElementText: function (el, text) {
+            el.textContent = text;
+        },
+        remove: function (el) {
+            var parent = el.parentNode;
+            if (parent) {
+                parent.removeChild(el);
+            }
+        },
+    };
+
+    var renderOptions = extend({ patchProp: patchProp }, nodeOps);
+    var renderer;
+    function ensureRenderer() {
+        return renderer || (renderer = createRenderer(renderOptions));
+    }
+    var render = function () {
+        var _a;
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        (_a = ensureRenderer()).render.apply(_a, __spreadArray([], __read(args), false));
+    };
+
     exports.Comment = Comment;
     exports.Fragment = Fragment;
     exports.Text = Text;
@@ -647,6 +847,7 @@ var Vue = (function (exports) {
     exports.queuePreFlushCb = queuePreFlushCb;
     exports.reactive = reactive;
     exports.ref = ref;
+    exports.render = render;
     exports.watch = watch;
 
     return exports;

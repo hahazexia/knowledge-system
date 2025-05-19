@@ -319,9 +319,8 @@ export function normalizeChildren(vnode: VNode, children: unknown) {
     }
   }
   vnode.children = children as VNodeNormalizedChildren;
-  // 按位或赋值，等同于 vnode.shapeFlag = vnode.shapeFlag | type
-  // shapeFlag 是 ELEMENT 1 type 是 TEXT_CHILDREN 8，1 | 8 = 9
-  // shapeFlag 是 ELEMENT 1 type 是 ARRAY_CHILDREN 16，1 | 16 = 17
+  // 按位或赋值，用来组合状态
+  // 比如 a = 0001 b = 0010 那么 a | b = 0011 ，相当于将 a 和 b 的状态组合到一起，既包含了 a 的二进制位也包含了 b 的二进制位
   vnode.shapeFlag |= type;
 }
 ```
