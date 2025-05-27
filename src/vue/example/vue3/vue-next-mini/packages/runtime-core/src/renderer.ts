@@ -1,7 +1,10 @@
 import { ShapeFlags } from 'packages/shared/src/shapeFlags';
 import { Comment, Fragment, isSameVNodeType, Text, VNode } from './vnode';
 import { EMPTY_OBJ, isString } from '@vue/shared';
-import { normalizeVNode } from './componentRenderUtils';
+import { normalizeVNode, renderComponentRoot } from './componentRenderUtils';
+import { createComponentInstance, setupComponent } from './component';
+import { ReactiveEffect } from 'packages/reactivity/src/effect';
+import { queuePreFlushCb } from './scheduler';
 
 export interface RenderOptions {
   patchProp(el: Element, key: string, prevValue: any, nextValue: any): void;
@@ -29,6 +32,12 @@ function baseCreateRenderer(options: RenderOptions): any {
     setText: hostSetText,
     createComment: hostCreateComment,
   } = options;
+
+  const processComponent = (oldVNode, newVNode, container, anchor) => {
+    if (oldVNode == null) {
+      mountComponent(newVNode, container, anchor);
+    }
+  };
 
   const processFragment = (oldVNode, newVNode, container, anchor) => {
     if (oldVNode == null) {
@@ -65,6 +74,58 @@ function baseCreateRenderer(options: RenderOptions): any {
     } else {
       patchElement(oldVNode, newVNode);
     }
+  };
+
+  const mountComponent = (initialVNode, container, anchor) => {
+    initialVNode.component = createComponentInstance(initialVNode);
+    const instance = initialVNode.component;
+
+    setupComponent(instance);
+    setupRenderEffect(instance, initialVNode, container, anchor);
+  };
+
+  const setupRenderEffect = (instance, initialVNode, container, anchor) => {
+    const componentUpdateFn = () => {
+      if (!instance.isMounted) {
+        const { bm, m } = instance;
+
+        if (bm) {
+          bm();
+        }
+
+        const subTree = (instance.subTree = renderComponentRoot(instance));
+
+        patch(null, subTree, container, anchor);
+
+        if (m) {
+          m();
+        }
+        initialVNode.el = subTree.el;
+        instance.isMounted = true;
+      } else {
+        let { next, vnode } = instance;
+        if (!next) {
+          next = vnode;
+        }
+
+        const nextTree = renderComponentRoot(instance);
+
+        const prevTree = instance.subTree;
+        instance.subTree = nextTree;
+
+        patch(prevTree, nextTree, container, anchor);
+        next.el = nextTree.el;
+      }
+    };
+
+    const effect = (instance.effect = new ReactiveEffect(
+      componentUpdateFn,
+      () => queuePreFlushCb(update),
+    ));
+
+    const update = (instance.update = () => effect.run());
+
+    update();
   };
 
   const mountElement = (vnode, container, anchor) => {
@@ -185,6 +246,7 @@ function baseCreateRenderer(options: RenderOptions): any {
         if (shapeFlag & ShapeFlags.ELEMENT) {
           processElement(oldVNode, newVNode, container, anchor);
         } else if (shapeFlag & ShapeFlags.COMPONENT) {
+          processComponent(oldVNode, newVNode, container, anchor);
         }
     }
   };
