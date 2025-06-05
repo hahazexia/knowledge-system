@@ -81,6 +81,7 @@
     - [XMLHttpRequest](./browser/XMLHttpRequest.md)
     - [fetch](./browser/fetch.md)
     - [requestAnimationFrame](./browser/requestAnimationFrame.md)
+    - [IntersectionObserver](./browser/IntersectionObserver.md)
     - [history](./browser/history.md)
     - [Image](./browser/image.md)
     - [serviceWorker]()
