@@ -1,6 +1,6 @@
 # promise
 
-Promise对象有以下两个特点。
+Promise 对象有以下两个特点。
 
 1. 对象的状态不受外界影响。Promise 对象代表一个异步操作，有三种状态：pending（进行中）、fulfilled（已成功）和 rejected（已失败）。只有异步操作的结果，可以决定当前是哪一种状态，任何其他操作都无法改变这个状态。这也是 Promise 这个名字的由来，它的英语意思就是“承诺”，表示其他手段无法改变。
 
@@ -28,14 +28,14 @@ resolve 或 reject 之后的的代码会继续执行。
 
 ```js
 new Promise((resolve, reject) => {
-  console.log(1)
+  console.log(1);
   resolve(2);
   console.log(3);
-}).then(r => {
+}).then((r) => {
   console.log(r);
 });
 
-console.log(4)
+console.log(4);
 
 // 1 3 4 2
 ```
@@ -44,22 +44,22 @@ console.log(4)
 
 ```js
 new Promise((resolve, reject) => {
-  console.log(1)
+  console.log(1);
   return resolve(2);
   console.log(3);
-}).then(r => {
+}).then((r) => {
   console.log(r);
 });
 
-console.log(4)
+console.log(4);
 
 // 1 4 2
 ```
 
-* Promise.prototype.then() 第一个参数是 resolved 状态的回调函数，第二个参数是 rejected 状态的回调函数，它们都是可选的。
-* Promise.prototype.catch() 是 .then(null, rejection) 或 .then(undefined, rejection) 的别名，用于指定发生错误时的回调函数。
-* 一般来说，不要在 then() 方法里面定义 Reject 状态的回调函数（即 then 的第二个参数），总是使用 catch 方法。
-* Promise.prototype.finally() finally() 方法用于指定不管 Promise 对象最后状态如何，都会执行的操作。该方法是 ES2018 引入标准的。finally 方法的回调函数不接受任何参数，这表明，finally方法里面的操作，应该是与状态无关的，不依赖于 Promise 的执行结果。
+- Promise.prototype.then() 第一个参数是 resolved 状态的回调函数，第二个参数是 rejected 状态的回调函数，它们都是可选的。
+- Promise.prototype.catch() 是 .then(null, rejection) 或 .then(undefined, rejection) 的别名，用于指定发生错误时的回调函数。
+- 一般来说，不要在 then() 方法里面定义 Reject 状态的回调函数（即 then 的第二个参数），总是使用 catch 方法。
+- Promise.prototype.finally() finally() 方法用于指定不管 Promise 对象最后状态如何，都会执行的操作。该方法是 ES2018 引入标准的。finally 方法的回调函数不接受任何参数，这表明，finally 方法里面的操作，应该是与状态无关的，不依赖于 Promise 的执行结果。
 
 ```js
 promise
@@ -83,12 +83,11 @@ const p = Promise.any([p1, p2, p3]);
 // {status: 'rejected', reason: reason}
 ```
 
-* 它们四个都是将多个 promise 包装成一个
-    + Promise.all 当所有都 resolve 才会返回 resolve，否则返回第一个 reject
-    + Promise.race 哪一个先变，就返回哪一个的状态
-    + Promise.allSettled 所有异步都结束了，无论成功或者失败，返回结果对象组成的数组
-    + Promise.any 有一个 resolve 了就返回 resolve，所有 reject 了才返回 reject
-
+- 它们四个都是将多个 promise 包装成一个
+  - Promise.all 当所有都 resolve 才会返回 resolve，否则返回第一个 reject
+  - Promise.race 哪一个先变，就返回哪一个的状态
+  - Promise.allSettled 所有异步都结束了，无论成功或者失败，返回结果对象组成的数组
+  - Promise.any 有一个 resolve 了就返回 resolve，所有 reject 了才返回 reject
 
 下面是 Promise.any 例子
 
@@ -111,15 +110,151 @@ Promise.any([rejected, alsoRejected]).catch(function (results) {
 第一题
 
 ```js
-Promise.resolve(1)
-  .then(2)
-  .then(Promise.resolve(3))
-  .then(console.log)
+Promise.resolve(1).then(2).then(Promise.resolve(3)).then(console.log);
 ```
 
 <details>
 <summary>答案</summary>
 
 如果 Promise.prototype.then 的第一个参数不是函数，则会在内部被替换为 (x) => x，即原样返回 promise 最终结果的函数。因此第一个 then 和 第二个 then 都变成了 (x) => x，x 是 一开始的 1 被传递下去。最后被 console.log 函数接收打印出来。
+
 </details>
 <br><br>
+
+第二题
+
+手写 promise 实现
+
+```js
+const PENDING = 'pending';
+const FULFILLED = 'fulfilled';
+const REJECTED = 'rejected';
+
+class MyPromise {
+  constructor(executor) {
+    this.state = PENDING;
+    this.value = undefined;
+    this.reason = undefined;
+    this.onFulfilledCallbacks = [];
+    this.onRejectedCallbacks = [];
+
+    const resolve = (value) => {
+      if (this.state === PENDING) {
+        this.state = FULFILLED;
+        this.value = value;
+        this.onFulfilledCallbacks.forEach((callback) =>
+          queueMicrotask(callback)
+        );
+      }
+    };
+
+    const reject = (reason) => {
+      if (this.state === PENDING) {
+        this.state = REJECTED;
+        this.reason = reason;
+        this.onRejectedCallbacks.forEach((callback) =>
+          queueMicrotask(callback)
+        );
+      }
+    };
+
+    try {
+      executor(resolve, reject);
+    } catch (error) {
+      reject(error);
+    }
+  }
+
+  then(onFulfilled, onRejected) {
+    onFulfilled =
+      typeof onFulfilled === 'function' ? onFulfilled : (value) => value;
+    onRejected =
+      typeof onRejected === 'function'
+        ? onRejected
+        : (error) => {
+            throw error;
+          };
+
+    return new MyPromise((resolve, reject) => {
+      const handleFulfilled = () => {
+        queueMicrotask(() => {
+          try {
+            const result = onFulfilled(this.value);
+            resolve(result);
+          } catch (error) {
+            reject(error);
+          }
+        });
+      };
+
+      const handleRejected = () => {
+        queueMicrotask(() => {
+          try {
+            const result = onRejected(this.reason);
+            resolve(result);
+          } catch (error) {
+            reject(error);
+          }
+        });
+      };
+
+      if (this.state === FULFILLED) {
+        handleFulfilled();
+      } else if (this.state === REJECTED) {
+        handleRejected();
+      } else if (this.state === PENDING) {
+        this.onFulfilledCallbacks.push(handleFulfilled);
+        this.onRejectedCallbacks.push(handleRejected);
+      }
+    });
+  }
+
+  catch(onRejected) {
+    return this.then(null, onRejected);
+  }
+
+  static resolve(value) {
+    return new MyPromise((resolve) => resolve(value));
+  }
+
+  static reject(reason) {
+    return new MyPromise((_, reject) => reject(reason));
+  }
+
+  static all(promises) {
+    return new MyPromise((resolve, reject) => {
+      if (!Array.isArray(promises)) {
+        return reject(new TypeError('Expected an array'));
+      }
+
+      const results = new Array(promises.length);
+      let completedCount = 0;
+
+      if (promises.length === 0) {
+        return resolve(results);
+      }
+
+      promises.forEach((promise, index) => {
+        MyPromise.resolve(promise).then(
+          (value) => {
+            results[index] = value;
+            completedCount++;
+            if (completedCount === promises.length) {
+              resolve(results);
+            }
+          },
+          (error) => {
+            reject(error);
+          }
+        );
+      });
+    });
+  }
+}
+```
+
+这个版本是最简洁且符合规范的实现，通过 queueMicrotask 实现了 Promise 的微任务异步特性，符合 Promise/A+ 规范：
+
+- 保持了状态不可变性
+- 实现了真正的异步回调
+- 支持链式调用和错误处理
