@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <input type="file" id="uploadInput" />
+    <script>
+      const input = document.getElementById('uploadInput');
+      function fileChange() {
+        console.log(input.files);
+      }
+      input.addEventListener('change', fileChange);
+
+      function upload(file, opProgress, onFinish) {
+        const xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+          const resp = JSON.parse(xhr.responseText);
+          console.log(resp);
+          onFinish(resp);
+        };
+
+        xhr.open('POST', 'http://test.com/upload');
+
+        xhr.upload.onprogress = function (e) {
+          const persent = Math.floor((e.loaded / e.total) * 100);
+          console.log(persent);
+          opProgress(persent);
+        };
+        const form = new FormData();
+        form.append('img', file);
+        xhr.send(form);
+
+        return function cancel() {
+          xhr.abort();
+        };
+      }
+
+      function uploadBase64(file, opProgress, onFinish) {
+        const ext = '.' + file.name.split('.').pop();
+        const reader = new FileReader();
+        let xhr;
+        reader.onload = (e) => {
+          const base64 = e.target.result.split(',').pop();
+
+          xhr = new XMLHttpRequest();
+          xhr.onload = function () {
+            const resp = JSON.parse(xhr.responseText);
+            console.log(resp);
+            onFinish(resp);
+          };
+          xhr.upload.onprogress = function (e) {
+            const persent = Math.floor((e.loaded / e.total) * 100);
+            console.log(persent);
+            opProgress(persent);
+          };
+
+          xhr.open('POST', 'http://test.com/uploadbase64');
+
+          xhr.setRequestHeader('content-type', 'application/json');
+          xhr.send({
+            ext: ext,
+            img: base64,
+          });
+        };
+        reader.readAsDataURL(file);
+
+        return function cancel() {
+          xhr.abort();
+        };
+      }
+
+      function uploadBinary(file, opProgress, onFinish) {
+        const xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+          const resp = JSON.parse(xhr.responseText);
+          console.log(resp);
+          onFinish(resp);
+        };
+
+        xhr.open('POST', 'http://test.com/uploadbinary');
+
+        xhr.upload.onprogress = function (e) {
+          const persent = Math.floor((e.loaded / e.total) * 100);
+          console.log(persent);
+          opProgress(persent);
+        };
+        xhr.setRequestHeader('content-type', 'application/octet-stream');
+        xhr.setRequestHeader('x-ext', '.' + file.name.split('.').pop());
+        xhr.send(file);
+
+        return function cancel() {
+          xhr.abort();
+        };
+      }
+    </script>
+  </body>
+</html>
