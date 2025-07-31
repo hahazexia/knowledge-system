@@ -199,3 +199,9 @@ autoUpdater.quitAndInstall(isSilent, isForceRunAfter); // 退出应用并安装�
     [2025-07-31 04:42:03.324] [error] Cannot download differentially, fallback to full download: Error: Content-Type "multipart/byteranges" is expected, but got "application/x-msdos-program"
   ```
 - 如果某个新版本不想走增量更新，直接将服务器上对应的 `blockmap` 文件删除即可
+
+## 参考链接
+
+- [auto-update](https://www.electron.build/auto-update)
+- [electron-updater-example](https://github.com/iffy/electron-updater-example)
+- [Can I disable differential download? #4682](https://github.com/electron-userland/electron-builder/issues/4682)
