@@ -186,6 +186,10 @@
   - [nodejs 基础](./nodejs/basic.md)
   - [koa2 源码解析](./nodejs/koa2.md)
 
+- [electron]()
+
+  - [electron全量更新与增量更新](./electron/updater.md)
+
 - [前端实践]()
   - [ESLint 代码规范](./frontend_practice/eslint.md)
   - [stylelint 代码规范](./frontend_practice/stylelint.md)
