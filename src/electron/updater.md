@@ -1,125 +1,132 @@
-# electron全量更新与增量更新
+# electron 全量更新与增量更新
 
-* electron 的自动更新功能依赖于 `electron-builder` 和 `electron-updater`
-* `electron-builder` 打包以后会生成 3 个文件
+- electron 的自动更新功能依赖于 `electron-builder` 和 `electron-updater`
+- `electron-builder` 打包以后会生成 3 个文件
   - `latest.yml` 包含最新版本包的信息的配置文件，其中有 文件版本号，文件地址，文件哈希值，打包时间
-  - `electron-update Setup 1.0.0.exe` 安装包exe文件
+  - `electron-update Setup 1.0.0.exe` 安装包 exe 文件
   - `electron-update Setup 1.0.1.exe.blockmap` blockmap 文件，它记录了应用程序文件的区块索引和哈希值，帮助 electron-updater 精准识别新旧版本间的差异
-
 
 ## 如何实现
 
 1. 打包后将 `latest.yml`，`安装包exe文件`还有 `blockmap 文件`全部放到服务器上作为静态资源文件服务，需要配置静态资源服务，以便后续检查更新的时候客户端 app 可以下载到这些文件
-  ```js
-  const Koa = require('koa');
-  const app = new Koa();
-  const serve = require('koa-static-server');
-  const { rangeStatic } = require('koa-range-static');
 
-  // app.use(
-  //   serve({
-  //     rootDir: 'public',
-  //     rootPath: '/',
-  //     setHeaders: (res, path, stat) => {
-  //       res.setHeader('Accept-Ranges', 'bytes');
-  //       res.setHeader('Content-Type', 'multipart/byteranges');
-  //     },
-  //   })
-  // );
+```js
+const Koa = require('koa');
+const app = new Koa();
+const serve = require('koa-static-server');
+const { rangeStatic } = require('koa-range-static');
 
-  app.use(rangeStatic({ root: 'public', directory: true }));
-  app.listen(33855);
-  ```
+// app.use(
+//   serve({
+//     rootDir: 'public',
+//     rootPath: '/',
+//     setHeaders: (res, path, stat) => {
+//       res.setHeader('Accept-Ranges', 'bytes');
+//       res.setHeader('Content-Type', 'multipart/byteranges');
+//     },
+//   })
+// );
+
+app.use(rangeStatic({ root: 'public', directory: true }));
+app.listen(33855);
+```
+
 2. 在主进程中引入 `electron-updater` 的逻辑
-  ```js
-  const { app, BrowserWindow, ipcMain } = require('electron');
-  const path = require('node:path');
-  const { autoUpdater } = require('electron-updater');
-  const log = require('electron-log');
 
-  // 为 autoUpdater 设置日志工具，autoUpdater 内部的日志都会输出到硬盘中，windows 系统默认在 C:\Users\用户名\AppData\Roaming\应用名\logs 下，方便 debug
-  autoUpdater.logger = log;
-  autoUpdater.logger.transports.file.level = 'info';
+```js
+const { app, BrowserWindow, ipcMain } = require('electron');
+const path = require('node:path');
+const { autoUpdater } = require('electron-updater');
+const log = require('electron-log');
 
-  // 设置 disableDifferentialDownload 可以关闭差分更新，也就是增量更新
-  // autoUpdater.disableDifferentialDownload = true;
-  log.info('App starting...');
+// 为 autoUpdater 设置日志工具，autoUpdater 内部的日志都会输出到硬盘中，windows 系统默认在 C:\Users\用户名\AppData\Roaming\应用名\logs 下，方便 debug
+autoUpdater.logger = log;
+autoUpdater.logger.transports.file.level = 'info';
+autoUpdater.autoInstallOnAppQuit = false;
 
-  let win;
+// 设置 disableDifferentialDownload 可以关闭差分更新，也就是增量更新
+// autoUpdater.disableDifferentialDownload = true;
+log.info('App starting...');
 
-  const createWindow = () => {
-    win = new BrowserWindow({
-      width: 800,
-      height: 600,
-      webPreferences: {
-        preload: path.join(__dirname, 'preload.js'),
-      },
-    });
+let win;
 
-    win.loadFile('index.html');
-    win.webContents.openDevTools();
-
-    win.on('ready-to-show', () => {
-      log.info('start check updates');
-      // 检查是否需要更新
-      autoUpdater.checkForUpdatesAndNotify();
-    })
-  };
-
-  function sendStatusToWindow(text) {
-    log.info(text);
-    win.webContents.send('message', text);
-  }
-
-  // 检查更新事件
-  autoUpdater.on('checking-for-update', () => {
-    sendStatusToWindow('Checking for update...');
+const createWindow = () => {
+  win = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+    },
   });
 
-  // 有新版本可用
-  autoUpdater.on('update-available', (info) => {
-    sendStatusToWindow('Update available.');
-  });
+  win.loadFile('index.html');
+  win.webContents.openDevTools();
 
-  // 无可用更新
-  autoUpdater.on('update-not-available', (info) => {
-    sendStatusToWindow('Update not available.');
+  win.on('ready-to-show', () => {
+    log.info('start check updates');
+    // 检查是否需要更新
+    autoUpdater.checkForUpdatesAndNotify();
   });
+};
 
-  // 报错
-  autoUpdater.on('error', (err) => {
-    sendStatusToWindow('Error in auto-updater. ' + err);
-  });
+function sendStatusToWindow(text) {
+  log.info(text);
+  win.webContents.send('message', text);
+}
 
-  // 下载进度
-  autoUpdater.on('download-progress', (progressObj) => {
-    let log_message = 'Download speed: ' + progressObj.bytesPerSecond;
-    log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
-    log_message =
-      log_message +
-      ' (' +
-      progressObj.transferred +
-      '/' +
-      progressObj.total +
-      ')';
-    sendStatusToWindow(log_message);
-  });
+// 检查更新事件
+autoUpdater.on('checking-for-update', () => {
+  sendStatusToWindow('Checking for update...');
+});
 
-  // 更新包下载完成
-  autoUpdater.on('update-downloaded', (info) => {
-    sendStatusToWindow('Update downloaded');
-  });
+// 有新版本可用
+autoUpdater.on('update-available', (info) => {
+  sendStatusToWindow('Update available.');
+});
 
-  app.whenReady().then(() => {
-    createWindow();
-  });
+// 无可用更新
+autoUpdater.on('update-not-available', (info) => {
+  sendStatusToWindow('Update not available.');
+});
 
-  app.on('window-all-closed', () => {
-    app.quit();
-  });
+// 报错
+autoUpdater.on('error', (err) => {
+  sendStatusToWindow('Error in auto-updater. ' + err);
+});
 
-  ```
+// 下载进度
+autoUpdater.on('download-progress', (progressObj) => {
+  let log_message = 'Download speed: ' + progressObj.bytesPerSecond;
+  log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
+  log_message =
+    log_message +
+    ' (' +
+    progressObj.transferred +
+    '/' +
+    progressObj.total +
+    ')';
+  sendStatusToWindow(log_message);
+});
+
+// 更新包下载完成
+autoUpdater.on('update-downloaded', (info) => {
+  sendStatusToWindow('Update downloaded');
+  setTimeout(() => {
+    autoUpdater.quitAndInstall(true, true);
+  }, 4000);
+});
+
+app.whenReady().then(() => {
+  createWindow();
+});
+
+app.on('window-all-closed', () => {
+  app.quit();
+});
+```
+
 3. 在 `package.json`中配置打包选项
+
 ```js
   {
     "build": {
@@ -134,7 +141,9 @@
       "target": "nsis"
     },
     "nsis": { // nsis 安装包配置项
-      "createDesktopShortcut": "always"
+      "createDesktopShortcut": "always", // 是否创建桌面图标
+      "oneClick": false, // 是否是一键安装包
+      "allowToChangeInstallationDirectory": true // 允许用户选择安装目录
     },
     "electronDownload": { // electron-builder 打包编译时切换镜像源，避免下载超时失败问题
     // https://github.com/electron/get?tab=readme-ov-file#specifying-a-mirror
@@ -143,11 +152,12 @@
   }
   }
 ```
+
 4. 这样当应用安装后启动，主进程就会触发 `autoUpdater.checkForUpdatesAndNotify()`去检查是否需要更新，如果当前电脑安装的是 `1.0.0`版本，而静态资源服务上的 `latest.yml` 中是 `1.0.1` 版本号，`electron-updater`就会判断应用需要更新。这里会发生下面几件事：
-  1. 第一个版本，`1.0.0`版本安装成功后，`1.0.0`的安装包文件会被复制到 `C:\Users\用户名\AppData\Local\应用名-updater` 目录下
-  2. `autoUpdater.checkForUpdatesAndNotify()` 会请求文件服务器上的 `latest.yml` 文件，然后做版本号比较，判断是否需要更新
-  3. 如果 `latest.yml` 中是 `1.0.1`则需要更新，`autoUpdater`会去下载`1.0.0`和`1.0.1`两个版本的 `blockmap` 文件，两个版本的 `blockmap` 文件只要有一个不存在，就无法比较差异，自动降级为全量更新，直接下载完整的 `1.0.1` 安装包；如果两个版本的 `blockmap` 文件都存在，就下载然后比对新旧版本之间区块的差异，然后差分更新，只去下载需要更新的部分。新版本的安装包文件会下载到 `C:\Users\用户名\AppData\Local\应用名-updater\pending`目录下
-  4. 待用户退出应用后会自动发起静默更新操作，在系统后台自动安装新版本应用
+1. 第一个版本，`1.0.0`版本安装成功后，`1.0.0`的安装包文件会被复制到 `C:\Users\用户名\AppData\Local\应用名-updater` 目录下
+1. `autoUpdater.checkForUpdatesAndNotify()` 会请求文件服务器上的 `latest.yml` 文件，然后做版本号比较，判断是否需要更新
+1. 如果 `latest.yml` 中是 `1.0.1`则需要更新，`autoUpdater`会去下载`1.0.0`和`1.0.1`两个版本的 `blockmap` 文件，两个版本的 `blockmap` 文件只要有一个不存在，就无法比较差异，自动降级为全量更新，直接下载完整的 `1.0.1` 安装包；如果两个版本的 `blockmap` 文件都存在，就下载然后比对新旧版本之间区块的差异，然后差分更新，只去下载需要更新的部分。新版本的安装包文件会下载到 `C:\Users\用户名\AppData\Local\应用名-updater\pending`目录下
+1. 待用户退出应用后会自动发起静默更新操作，在系统后台自动安装新版本应用
 
 ## 日志表现
 
@@ -181,11 +191,10 @@
   ```
 - 对比可以看到增量更新只下载了原始安装包大小的 1%
 
-
 ## `electron-updater`其他参数
 
 ```js
-autoUpdater.forceDevUpdateConfig = true //开发环境下强制更新
+autoUpdater.forceDevUpdateConfig = true; //开发环境下强制更新
 autoUpdater.autoDownload = false; // 自动下载更新
 autoUpdater.autoInstallOnAppQuit = true; // 应用退出后自动安装
 autoUpdater.quitAndInstall(isSilent, isForceRunAfter); // 退出应用并安装已经下载好的更新。isSilent 是否静默安装 isForceRunAfter 安装后是否重启应用
