@@ -19,6 +19,8 @@
 
 ## 原生模块相关
 
+- 如果要使用原生模块的 npm 包，需提前安装环境，根据 [node-gyp](https://www.npmjs.com/package/node-gyp) 官方描述，在 windows 下需要安装 python 环境和 C++ 环境，安装[当前版本的 python](https://devguide.python.org/versions/)和[visual studio 社区版](https://visualstudio.microsoft.com/zh-hans/thank-you-downloading-visual-studio/?sku=Community)，安装 visual studio 时注意勾选 `Desktop development with C++ workload`
+
 - 有些 npm 包其实主功能是原生编译的模块，例如 `sqlite3` 或者 `better-sqlite3` 是使用 c++ 实现的原生模块，然后使用 `node-gyp` 编译成目标平台（指定 electron 版本的 nodejs 环境和软件位宽）的 `.node` 文件。碰到这类原生模块，如果默认下载的包和当前使用的 electron 版本不兼容就会碰到如下错误：
   ```bash
   Error: The module '/path/to/native/module.node'
