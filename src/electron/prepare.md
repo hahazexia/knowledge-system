@@ -43,6 +43,8 @@
 
 - 总之可以大概确定由于沙箱的机制导致在这些老旧机器上 gpu 进程崩溃了。除了添加传递给 chromium 的启动参数，还可以在主进程 main.js 最上方写一句 `app.commandLine.appendSwitch('--in-process-gpu');` 即可在代码层面传递启动参数
 
+- 最后发现其实闪退真正的原因是 electron-builder 打包配置中设置了 `requestedExecutionLevel` 为 `requireAdministrator` 造成的，要求管理员权限，如果当前账户不是管理员权限就会闪退，去掉 `requestedExecutionLevel` 配置即可解决此问题
+
 ## 参考链接
 
 - [Node 原生模块](https://www.electronjs.org/zh/docs/latest/tutorial/using-native-node-modules)
