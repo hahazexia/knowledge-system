@@ -8,6 +8,28 @@
 - electron-updater 更新时下载的全量安装包会下载到 `C:\Users\用户名\AppData\Local\应用名-updater`
 - 默认日志或者缓存目录 （使用 app.getPath('userData')） `C:\Users\用户名\AppData\Roaming\应用名`
 
+## 关于网速慢装包失败
+
+- 有时候网速太慢，下载 electron 会失败，这时候需要切换源。切换最快的源后再装包，成功率就高一些
+
+  ```bash
+    npm i nrm -g
+
+    nrm test
+
+      npm ---------- 1551 ms
+      yarn --------- timeout (Fetch timeout over 5000 ms)
+      tencent ------ 534 ms
+      cnpm --------- 3778 ms
+      taobao ------- 2210 ms
+      npmMirror ---- 4206 ms (Fetch error, if this is your private registry, please ignore)
+    * huawei ------- 480 ms
+
+    // 可以看到 huawei 的源速度最快
+
+    nrm use huawei
+  ```
+
 ## electron-builder 打包下载相关
 
 - electron-builder 打包的时候会根据目标平台和软件位宽去下载对应平台和版本的 electron 包，下载后 windows 系统下放在 `C:/Users/用户名/AppData/Local/electron/Cache` 目录下
