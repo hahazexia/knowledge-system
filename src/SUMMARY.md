@@ -191,6 +191,8 @@
   - [electron 开发踩坑](./electron/prepare.md)
   - [electron 全量更新与增量更新](./electron/updater.md)
   - [asar 增量更新](./electron/asar_update.md)
+  - [开发框架搭建](./electron/framework.md)
+  - [打包流程](./electron/build.md)
 
 - [前端实践]()
   - [ESLint 代码规范](./frontend_practice/eslint.md)
