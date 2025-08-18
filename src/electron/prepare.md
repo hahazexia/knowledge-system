@@ -69,6 +69,10 @@
 
 - 最后发现其实闪退真正的原因是 electron-builder 打包配置中设置了 `requestedExecutionLevel` 为 `requireAdministrator` 造成的，要求管理员权限，如果当前账户不是管理员权限就会闪退，去掉 `requestedExecutionLevel` 配置即可解决此问题
 
+## 打包报错
+
+- 打包过程中莫名其妙的报错，并且没有任何错误信息提示，那么极有可能是因为使用了 `electron-builder` 的钩子函数，例如 `afterPack` `afterAllArtifactBuild` `beforePack` 等等指定的 js 文件报错了，所以去 `package.json` 文件中将这些钩子函数先删掉然后重新打包再看看
+
 ## 参考链接
 
 - [Node 原生模块](https://www.electronjs.org/zh/docs/latest/tutorial/using-native-node-modules)

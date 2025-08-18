@@ -16,6 +16,8 @@
 // demo 这里没有使用前端框架作为渲染进程页面的开发，如果使用了前端框架，那就在 build 命令中 electron-builder 打包之前再加上一条编译前端页面的命令即可
 ```
 
+![electron_build](./img/electron_build.png)
+
 - 下面是 vite.es.config.js 编译主进程的 vite 配置
 
 ```js
@@ -141,6 +143,71 @@ export default defineConfig({
     },
   },
 });
+```
+
+下面是关键，`package.json` 中的 `electron-builder` 配置
+
+```js
+{
+  "build": {
+    "appId": "update.test", // 应用id
+    "productName": "hahazexia", // 产品名
+    "directories": {
+      "output": "out" // 打包输出目录
+    },
+    "publish": [ // 为自动更新设置下载服务器地址
+      {
+        "provider": "generic", // 自定义服务
+        "url": "http://127.0.0.1:33855/" // 升级接口地址
+      }
+    ],
+    "win": { // 打包目标平台和安装包格式
+      "target": "nsis"
+    },
+    "nsis": { // nsis 配置
+      "oneClick": false, // 是否生成一键安装包
+      "perMachine": true, // 是否为每个用户安装应用（显示安装模式页面）
+      "warningsAsErrors": false, // nsis 允许 warning 存在
+      "createDesktopShortcut": "always", // 创建桌面图标
+      "allowToChangeInstallationDirectory": true, // 允许用户修改安装路径
+      "artifactName": "${productName}_v${version}.exe", // 安装包文件名
+      "license": "./mxy_SoftwareLicence.txt", // 安装包协议页显示内容
+      "installerIcon": "./icon.ico", // 安装包图标
+      "uninstallerIcon": "./icon.ico", // 卸载图标
+    },
+    "electronDownload": { // 打包过程中下载 electron 的镜像地址
+      "mirror": "https://registry.npmmirror.com/binary.html?path=electron/"
+    },
+    "files": [ // 打包的文件列表
+      "**/*",
+      ".env",
+      "package.json",
+      "!nsis_publish/**/*",
+      "!out/**/*",
+      "!public",
+      "!src",
+      "!.gitignore",
+      "!afterAllArtifactBuild.cjs",
+      "!afterPack.cjs",
+      "!beforePack.cjs",
+      "!*.ico",
+      "!installer.nsi",
+      "!License.txt",
+      "!out.log",
+      "!package-lock.json",
+      "!README.md",
+      "!Readme.txt",
+      "!server.js",
+      "!sha512.js",
+      "!tsconfig.*.json",
+      "!tsconfig.json",
+      "!update.json",
+      "!vite.*.config.ts",
+      "!*.exe"
+    ],
+    "afterPack": "./afterPack.cjs" // 钩子函数文件
+  }
+}
 ```
 
 ## 参考链接
