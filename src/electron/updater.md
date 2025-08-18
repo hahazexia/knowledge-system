@@ -2,9 +2,12 @@
 
 - electron 的自动更新功能依赖于 `electron-builder` 和 `electron-updater`
 - `electron-builder` 打包以后会生成 3 个文件
+
   - `latest.yml` 包含最新版本包的信息的配置文件，其中有 文件版本号，文件地址，文件哈希值，打包时间
   - `electron-update Setup 1.0.0.exe` 安装包 exe 文件
   - `electron-update Setup 1.0.1.exe.blockmap` blockmap 文件，它记录了应用程序文件的区块索引和哈希值，帮助 electron-updater 精准识别新旧版本间的差异
+
+  ![electron_updater](./img/electron_updater.png)
 
 ## 如何实现
 
@@ -80,22 +83,22 @@ autoUpdater.on('checking-for-update', () => {
 });
 
 // 有新版本可用
-autoUpdater.on('update-available', (info) => {
+autoUpdater.on('update-available', info => {
   sendStatusToWindow('Update available.');
 });
 
 // 无可用更新
-autoUpdater.on('update-not-available', (info) => {
+autoUpdater.on('update-not-available', info => {
   sendStatusToWindow('Update not available.');
 });
 
 // 报错
-autoUpdater.on('error', (err) => {
+autoUpdater.on('error', err => {
   sendStatusToWindow('Error in auto-updater. ' + err);
 });
 
 // 下载进度
-autoUpdater.on('download-progress', (progressObj) => {
+autoUpdater.on('download-progress', progressObj => {
   let log_message = 'Download speed: ' + progressObj.bytesPerSecond;
   log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
   log_message =
@@ -109,7 +112,7 @@ autoUpdater.on('download-progress', (progressObj) => {
 });
 
 // 更新包下载完成
-autoUpdater.on('update-downloaded', (info) => {
+autoUpdater.on('update-downloaded', info => {
   sendStatusToWindow('Update downloaded');
   setTimeout(() => {
     autoUpdater.quitAndInstall(true, true);

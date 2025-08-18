@@ -12,10 +12,13 @@
   1. 第一种是双 `asar` 包方案，软件会生成两个 `asar` 包，`electron-builder` 默认打包生成的 `app.asar` 作为入口包，软件启动后还是从 `app.asar` 启动，但是 `app.asar` 的代码里只存放检测新版本文件和覆盖的逻辑，做完覆盖操作后就使用 `require` 或者 `import` 动态导入 `main-v1.0.0.asar` 这个主 `asar` 包，所有软件的业务逻辑都在主包中
   2. 第二种逻辑简单一些，检查升级服务器是否存在新版本包，如果存在就下载下来，下载成功后立即退出软件，同时启动一个子进程，与软件主进程脱离关系，主进程退出后执行一个批处理脚本（或者 shell 脚本）覆盖操作，覆盖成功后再重启软件。所有的覆盖逻辑还有重启逻辑都在批处理脚本中
 - 优缺点分析：
+
   - 双 `asar` 方案缺点是会出现两个版本号，因为 `asar` 包中必须存在 `package.json` 文件，因此当主包升级后，主包版本号会和入口包版本号不一致，解决办法是实现一个方法，需要读取版本号的时候都要去读取主包内的 `package.json` 的版本号。双包方案实现起来略微有些复杂
   - 批处理脚本的优点是，实现起来简单，缺点是有可能批处理脚本的操作会被杀毒软件认为是病毒操作，被误杀
 
 ## 双 asar 方案
+
+![double_asar_update](./img/double_asar_update.png)
 
 ```js
 // 主包入口文件 index.js
@@ -330,6 +333,8 @@ exports.asarUpdateCheck = async function asarUpdateCheck(sendStatusToWindow) {
 ```
 
 ## 批处理方案
+
+![batch_update](./img/batch_update.png)
 
 批处理方案的逻辑就简单得多了，首先检查更新和下载 asar 增量包得逻辑和双包方案是一样的，在确定需要增量更新后，调用 `exitAndRunBatch` 方法退出应用并升级
 
