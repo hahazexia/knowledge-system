@@ -210,6 +210,72 @@ export default defineConfig({
 }
 ```
 
+## 输出目录
+
+最终打包输出的结果如下：
+
+```bash
+electron-build-update-demo\out
+└─win-unpacked // 未压缩的完整的应用文件夹
+  ├─locales // electron 核心模块的国际化文件
+  ├─resources // 应用的核心资源目录
+  │ ├─app.asar.unpacked //app.asar 的 “未打包” 目录。
+  │ ├─app-update.yml // Electron 自动更新的配置文件
+  │ ├─app.asar // 核心源码
+  │ ├─elevate.exe // （仅 Windows 平台）这是一个用于提升应用权限的辅助程序
+  ├─chrome_100_percent.pak
+  ├─chrome_200_percent.pak
+  ├─d3dcompiler_47.dll
+  ├─electron-update.exe // 应用可执行文件
+  ├─ffmpeg.dll
+  ├─icudtl.dat
+  ├─libEGL.dll
+  ├─libGLESv2.dll
+  ├─LICENSE.electron.txt
+  ├─LICENSES.chromium.html
+  ├─resources.pak
+  ├─snapshot_blob.bin
+  ├─v8_context_snapshot.bin
+  ├─vk_swiftshader_icd.json
+  ├─vk_swiftshader.dll
+  ├─vulkan-1.dll
+└─builder-debug.yml
+└─builder-effective-config.yaml
+└─electron-update Setup 0.0.16.exe // nsis 安装包文件
+└─electron-update Setup 0.0.16.exe.blockmap // 安装包的块映射文件
+└─latest.yml // 更新元数据配置文件，包含了应用最新版本的关键信息
+```
+
+其中重要的文件解释如下：
+
+- `app.asar.unpacked` app.asar 的 “未打包” 目录。当你在 package.json 中通过 asarUnpack 配置指定某些文件不进行 ASAR 打包时（例如需要直接访问路径的二进制文件、动态链接库 .dll 等），这些文件会被解压到这个目录中。通常用于处理那些无法在 ASAR 归档中正常工作的资源
+- `app-update.yml` 这是 Electron 自动更新（通过 electron-updater）的配置文件，包含了应用更新的元数据，如更新服务器地址、当前版本信息等。当应用检查更新时，会依据此文件的配置与远程服务器通信，判断是否有新版本
+- `app.asar` 核心源码，应用源代码（HTML、CSS、JavaScript、图片等资源）被压缩打包成一个单一文件，既节省空间，又能防止源码轻易被篡改或查看。运行时，Electron 会直接从这个文件中读取并执行应用代码
+- `elevate.exe`（仅 Windows 平台）这是一个用于提升应用权限的辅助程序。当你的应用需要以管理员权限运行某些操作（如修改系统设置、写入受保护目录）时，Electron 会调用 elevate.exe 来请求系统权限提升，确保操作能正常执行
+- `electron-update Setup 0.0.16.exe.blockmap` 这是安装包的块映射文件，本质上是一个二进制差异文件。它记录了当前版本安装包（electron-update Setup 0.0.16.exe）与历史版本之间的差异信息。当应用检查更新时，Electron 的自动更新机制（通常基于 electron-updater）会利用这个文件，只下载新版本与旧版本之间的差异部分，而不是完整的安装包，从而减少更新时的下载流量，加快更新速度。
+- `latest.yml` 这是更新元数据配置文件，包含了应用最新版本的关键信息，例如：
+
+  - 最新版本号（version）
+  - 安装包的下载地址（url）
+  - 安装包的哈希值（sha512 等，用于校验文件完整性）
+  - 发布时间
+  - 当应用启动时，会通过 electron-updater 读取这个文件（通常是从远程服务器获取，本地也会保留一份），对比当前版本与最新版本，判断是否需要更新，并引导用户执行更新操作。
+
+- `latest.yml` 负责告知 “最新版本是什么”，`blockmap` 负责优化 “如何高效下载更新”。
+
+下面是 `latest.yml` 文件的内容示例
+
+```yml
+version: 0.0.16
+files:
+  - url: electron-update Setup 0.0.16.exe
+    sha512: 746Vm4AoQaDDuUE+MC+ZmgX8neF10tmHn9+WoLF+UnZ+7ce5iYFR9HMnc9cXDaTk3JAaCIgTLXO5cM2G73fqrQ==
+    size: 98884985
+path: electron-update Setup 0.0.16.exe
+sha512: 746Vm4AoQaDDuUE+MC+ZmgX8neF10tmHn9+WoLF+UnZ+7ce5iYFR9HMnc9cXDaTk3JAaCIgTLXO5cM2G73fqrQ==
+releaseDate: '2025-08-17T15:52:11.794Z'
+```
+
 ## 参考链接
 
 - [vite config build](https://cn.vitejs.dev/config/build-options.html)
