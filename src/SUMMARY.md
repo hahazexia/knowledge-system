@@ -193,6 +193,7 @@
   - [asar 增量更新](./electron/asar_update.md)
   - [开发框架搭建](./electron/framework.md)
   - [打包流程](./electron/build.md)
+  - [优化 asar 包大小](./electron/asar_size_opt.md)
 
 - [前端实践]()
   - [ESLint 代码规范](./frontend_practice/eslint.md)
