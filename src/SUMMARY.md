@@ -196,6 +196,11 @@
   - [优化 asar 包大小](./electron/asar_size_opt.md)
   - [集成自定义 nsis 打包](./electron/custom_nsis.md)
 
+- [typescript]()
+
+  - [搭建 ts 开发环境](./typescript/base.md)
+  - [基础](./typescript/base_type.md)
+
 - [前端实践]()
   - [ESLint 代码规范](./frontend_practice/eslint.md)
   - [stylelint 代码规范](./frontend_practice/stylelint.md)

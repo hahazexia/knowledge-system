@@ -1,0 +1,13 @@
+{
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "compilerOptions": {
+    // 编译选项
+    "target": "es2024", // 配置编译目标代码的版本
+    "module": "commonjs", // 配置编译目标使用的模块化标准
+    "lib": ["ES2024"], // 编译过程中需要引入的库文件
+    "outDir": "./dist", // 编译结果目录
+    "strictNullChecks": true, // 更加严格的空值检测
+    "removeComments": true
+  },
+  "include": ["./src"] // 编译哪些目录下的 ts 文件
+}
