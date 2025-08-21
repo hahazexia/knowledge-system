@@ -168,6 +168,14 @@ SectionEnd
 
 - `nsis_publish/SetupScripts/nim/ui_nim_setup.nsh` 中是主要逻辑
 
+| 方法名         | 说明                             |
+| -------------- | -------------------------------- |
+| DUIPage        | 安装入口脚本，用于初始化一些信息 |
+| un.DUIPage     | 卸载入口脚本                     |
+| BindUIControls | 绑定安装的界面事件               |
+| ShowMsgBox     | 显示二级子窗口                   |
+| OnBtnInstall   | 安装主流程控制                   |
+
 ## 参考链接
 
 - [nsNiuniuSkin github](https://github.com/leeqia/nsNiuniuSkin)
