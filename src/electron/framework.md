@@ -139,7 +139,7 @@ if (app.isPackaged) {
 - 从主分支新建一个 `feature/electron-v21.4.4` 分支，以支持 win7 系统打包，electron 版本切换到 21.4.4 版本
 
 ```bash
-npm install electron@21.4.4
+npm install electron@21.4.4 --save-dev
 ```
 
 - `package.json` 中 type 设置为 `commonjs`
