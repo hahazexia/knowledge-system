@@ -136,6 +136,111 @@ if (app.isPackaged) {
 
 ## commonjs 模块兼容 win7
 
+- 从主分支新建一个 `feature/electron-v21.4.4` 分支，以支持 win7 系统打包，electron 版本切换到 21.4.4 版本
+
+```bash
+npm install electron@21.4.4
+```
+
+- `package.json` 中 type 设置为 `commonjs`
+
+```json
+{
+  "type": "commonjs"
+}
+```
+
+- ts 配置文件修改 module 为 commonjs
+
+```json
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "outDir": "./maindist",
+    "module": "CommonJS",
+    "target": "esnext",
+    "moduleResolution": "Node",
+    "rootDir": "./main",
+    "removeComments": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true
+  },
+  "include": ["./main/**/*"],
+  "exclude": ["node_modules", "dist", "./main/preload.ts"]
+}
+```
+
+- vite 配置文件中配置需要修改成 cjs `build.lib.formats` `build.rollupOptions.output.format`
+
+```js
+import { defineConfig } from 'vite';
+import path from 'path';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
+
+const nodeBuiltins = [
+  'node:http',
+  'node:https',
+  'node:fs',
+  'node:fs/promises',
+  'node:path',
+  'node:url',
+  'node:child_process',
+  'module',
+];
+
+export default defineConfig({
+  root: path.resolve(__dirname, './main'),
+  build: {
+    outDir: path.resolve(__dirname, 'maindist'),
+    emptyOutDir: false,
+    target: 'node22',
+    lib: {
+      entry: ['index.ts'],
+      formats: ['cjs'],
+      fileName: (format, entryName) => {
+        return `${entryName}.js`;
+      },
+    },
+    rollupOptions: {
+      external: [
+        ...nodeBuiltins,
+        'electron',
+        'electron-log',
+        'dotenv',
+        'electron-updater',
+        'iconv-lite',
+        'better-sqlite3',
+      ],
+      plugins: [
+        nodeResolve({
+          preferBuiltins: true,
+          browser: false,
+        }),
+        commonjs({
+          include: /node_modules/,
+          esmExternals: false,
+        }),
+      ],
+      output: {
+        entryFileNames: 'index.js',
+        format: 'cjs',
+        externalLiveBindings: true,
+        globals: {
+          electron: 'electron',
+        },
+        sourcemap: true,
+        sourcemapExcludeSources: false,
+      },
+    },
+  },
+});
+```
+
 ## 参考链接
 
 - [ES Modules (ESM) in Electron](https://www.electronjs.org/docs/latest/tutorial/esm)
