@@ -73,6 +73,12 @@
 
 - 打包过程中莫名其妙的报错，并且没有任何错误信息提示，那么极有可能是因为使用了 `electron-builder` 的钩子函数，例如 `afterPack` `afterAllArtifactBuild` `beforePack` 等等指定的 js 文件报错了，所以去 `package.json` 文件中将这些钩子函数先删掉然后重新打包再看看
 
+- 打包后发现 `.asar` 中没有 `node_modules` 目录，环境为 `node 22.15.0` `npm 10.9.2` `electron-builder@26.0.12` windows。windows cmd 设置下面的命令开启 `electron-builder` [DEBUG](https://www.electron.build/electron-builder/index.html#debug) 模式
+  ```bash
+  set DEBUG=electron-builder
+  ```
+  然后会发现 `electron-builder` 收集到的 `node_modules` 依赖是空数组，已经在 [issue](https://github.com/electron-userland/electron-builder/issues/8970) 中留言，等待 `electron-builder` 官方回复，目前解决方法是将 `electron-builder` 降低至版本 26.0.2
+
 ## electron-builder打包之后exe图标问题
 
 - 出现一种情况，打包之后的 `win-unpacked` 目录下 exe 文件的图标和右键属性详细信息都是正常的，用自定义的 nsis 打包之后的安装包安装完成之后的软件打开后，任务栏的图标确变成了 electron 默认图标，并且安装目录下的 exe 文件的图标和属性详细信息也变成了 electron 默认的。这有可能是 windows 系统对于图标的缓存造成的，重启系统这个问题就自动好了
@@ -86,3 +92,5 @@
 - [Some Windows PCs forces Sandbox mode on Electron Chromium](https://stackoverflow.com/questions/77992943/some-windows-pcs-forces-sandbox-mode-on-electron-chromium)
 - [Need a way to run with --no-sandbox by default #18265](https://github.com/electron/electron/issues/18265)
 - [The built exe file is using Electron's Icon #2071](https://github.com/electron-userland/electron-builder/issues/2071)
+- ["Cannot find module 'sharp'" on Windows only after upgrading to 26.0.11 #8970](https://github.com/electron-userland/electron-builder/issues/8970)
+- [electron-builder Debug](https://www.electron.build/electron-builder/index.html#debug)
