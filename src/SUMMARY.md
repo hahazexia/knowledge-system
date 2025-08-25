@@ -198,6 +198,7 @@
   - [解决自定义 nsis 安装包带来的全量升级问题](./electron/custom_nsis_issue.md)
   - [集成日志](./electron/logger.md)
   - [集成 sqlite 数据库](./electron/sqlite.md)
+  - [数据库升级问题](./electron/db_update_issue.md)
 
 - [typescript]()
 
