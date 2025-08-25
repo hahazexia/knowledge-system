@@ -195,6 +195,7 @@
   - [打包流程](./electron/build.md)
   - [优化 asar 包大小](./electron/asar_size_opt.md)
   - [集成自定义 nsis 打包](./electron/custom_nsis.md)
+  - [解决自定义 nsis 安装包带来的全量升级问题](./electron/custom_nsis_issue.md)
   - [集成日志](./electron/logger.md)
   - [集成 sqlite 数据库](./electron/sqlite.md)
 
