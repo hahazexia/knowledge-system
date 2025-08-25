@@ -77,7 +77,7 @@
   ```bash
   set DEBUG=electron-builder
   ```
-  然后会发现 `electron-builder` 收集到的 `node_modules` 依赖是空数组，已经在 [issue](https://github.com/electron-userland/electron-builder/issues/8970) 中留言，等待 `electron-builder` 官方回复，目前解决方法是将 `electron-builder` 降低至版本 26.0.2
+  然后会发现 `electron-builder` 收集到的 `node_modules` 依赖是空数组，已经在 [issue](https://github.com/electron-userland/electron-builder/issues/8970#issuecomment-3218282500) 中留言，等待 `electron-builder` 官方回复，目前解决方法是将 `electron-builder` 降低至版本 26.0.2
 
 ## electron-builder打包之后exe图标问题
 
@@ -92,5 +92,5 @@
 - [Some Windows PCs forces Sandbox mode on Electron Chromium](https://stackoverflow.com/questions/77992943/some-windows-pcs-forces-sandbox-mode-on-electron-chromium)
 - [Need a way to run with --no-sandbox by default #18265](https://github.com/electron/electron/issues/18265)
 - [The built exe file is using Electron's Icon #2071](https://github.com/electron-userland/electron-builder/issues/2071)
-- ["Cannot find module 'sharp'" on Windows only after upgrading to 26.0.11 #8970](https://github.com/electron-userland/electron-builder/issues/8970)
+- ["Cannot find module 'sharp'" on Windows only after upgrading to 26.0.11 #8970](https://github.com/electron-userland/electron-builder/issues/8970#issuecomment-3218282500)
 - [electron-builder Debug](https://www.electron.build/electron-builder/index.html#debug)
