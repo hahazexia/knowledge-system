@@ -5,4 +5,12 @@ multilingual = false
 src = "src"
 title = "knowledge-system"
 
-# delete book dir and mdbook build
+[preprocessor]
+
+[preprocessor.mermaid]
+command = "mdbook-mermaid"
+
+[output]
+
+[output.html]
+additional-js = ["mermaid.min.js", "mermaid-init.js"]
