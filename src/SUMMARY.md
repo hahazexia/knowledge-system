@@ -199,6 +199,7 @@
   - [集成日志](./electron/logger.md)
   - [集成 sqlite 数据库](./electron/sqlite.md)
   - [数据库升级问题](./electron/db_update_issue.md)
+  - [数据库加密](./electron/db_encrypt.md)
 
 - [typescript]()
 
