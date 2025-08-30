@@ -22,6 +22,18 @@ H3 --> H4[通过 update 处理大部分明文，final 处理最后一块并完�
 H4 --> H5[将 16 字节 IV 与密文拼接，作为最终加密结果]
 ```
 
+## better-sqlite3-multiple-ciphers
+
+- `better-sqlite3-multiple-ciphers` 是增加了加密功能的 `better-sqlite3`，使用了 `SQLite3MultipleCiphers` 以支持多种加密算法
+- 只需要安装 `better-sqlite3-multiple-ciphers` 然后在代码里这样写就可以加密数据库文件了
+  ```ts
+    import Database from 'better-sqlite3-multiple-ciphers';
+    const db = new Database('foobar.db', options);
+    db.pragma(`key='secret-key'`);
+  ```
+- 这里的 key 的值就是密码明文，而我这里想要做的事情就是来劫持 `better-sqlite3-multiple-ciphers` 的接口，然后我们可以传入加密后的字符串，然后在 c++ 代码中解密之后再拿到明文密码传递给 sqlite
+- 经过试验，最后成功修改了 db.exec 方法，可以实现解密 PRAGMA key 语句和 PRAGMA rekey 传递的加密字符串
+
 ## 参考链接
 
 - [better-sqlite3-multiple-ciphers](https://www.npmjs.com/package/better-sqlite3-multiple-ciphers)

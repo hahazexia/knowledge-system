@@ -82,6 +82,7 @@
 ## electron-builder打包之后exe图标问题
 
 - 出现一种情况，打包之后的 `win-unpacked` 目录下 exe 文件的图标和右键属性详细信息都是正常的，用自定义的 nsis 打包之后的安装包安装完成之后的软件打开后，任务栏的图标确变成了 electron 默认图标，并且安装目录下的 exe 文件的图标和属性详细信息也变成了 electron 默认的。这有可能是 windows 系统对于图标的缓存造成的，重启系统这个问题就自动好了
+- windows 系统图标缓存目录在 `C:\Users\用户名\AppData\Local\Microsoft\Windows\Explorer` 下，删除所有 `iconcache` 开头的文件即可清除图标缓存
 
 ## 参考链接
 
