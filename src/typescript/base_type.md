@@ -300,6 +300,46 @@ const deck = createDeck();
 printDeck(deck);
 ```
 
+## 扩展知识 位枚举（枚举的位运算）
+
+- 枚举的位运算针对数字枚举
+
+```ts
+enum Permission {
+  Read = 1, // 0001
+  Write = 2, // 0010
+  Create = 4, // 0100
+  Delete = 8, // 1000
+}
+
+// 1 如何组合权限 使用或运算
+// 0001
+// 或
+// 0010
+// 0011
+
+// 或运算将两种权限合并起来
+let p: Permission = Permission.Read | Permission.Write;
+
+// 2 如何判断是否拥有某个权限
+// 0011
+// 且
+// 0010
+// 0010
+function hasPermission(target: Permission, per: Permission) {
+  return (target & per) === per;
+}
+
+hasPermission(p, Permission.Read);
+
+// 3 如何删除某个权限
+// 0011
+// 异或
+// 0010
+// 0001
+p = p ^ Permission.Write;
+```
+
 ## 模块化
 
 - ts config 模块化相关配置
@@ -339,6 +379,8 @@ console.log(name);
 console.log(sum(1, 2));
 ```
 
+- 下面是编译成 commonjs 的结果
+
 ```js
 // index.js
 'use strict';
@@ -357,3 +399,20 @@ const index_1 = require('./index');
 console.log(index_1.name);
 console.log((0, index_1.sum)(1, 2));
 ```
+
+- 如何在 ts 中书写 commonjs 模块代码
+
+```ts
+// 导出
+export = name;
+// 导入
+import name = require('name');
+
+// 这样写会被编译成 commonjs，并且保留类型提示
+```
+
+- 模块解析：从什么位置寻找模块，tsconfig 中的 `moduleResolution` 配置项
+  - 'node16' 或 'nodenext'：适用于现代版本的 Node.js。Node.js v12 及更高版本同时支持 ECMAScript 导入（import）和 CommonJS 引入（require），二者采用不同的解析算法。这两个 moduleResolution 值在与对应的 module 配置项结合使用时，会根据输出的 JavaScript 代码中 Node.js 实际识别的是 import 还是 require，自动选择对应的解析算法。
+  - 'node10'（此前名为 'node'）：适用于 v10 之前的旧版本 Node.js，这类版本仅支持 CommonJS 的 require 语法。在现代代码中，你大概率无需使用 node10 选项。
+  - 'bundler'：适用于打包工具（如 Webpack、Vite 等）场景。与 node16 和 nodenext 类似，该模式支持识别 package.json 中的 "imports" 和 - "exports" 字段；但与 Node.js 相关的解析模式不同，bundler 模式从不要求在相对路径导入语句中指定文件扩展名（如 .js、.ts）。
+    'classic'：是 TypeScript 1.6 版本发布前使用的解析模式，不应再使用。
