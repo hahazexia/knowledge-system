@@ -416,3 +416,70 @@ import name = require('name');
   - 'node10'（此前名为 'node'）：适用于 v10 之前的旧版本 Node.js，这类版本仅支持 CommonJS 的 require 语法。在现代代码中，你大概率无需使用 node10 选项。
   - 'bundler'：适用于打包工具（如 Webpack、Vite 等）场景。与 node16 和 nodenext 类似，该模式支持识别 package.json 中的 "imports" 和 - "exports" 字段；但与 Node.js 相关的解析模式不同，bundler 模式从不要求在相对路径导入语句中指定文件扩展名（如 .js、.ts）。
     'classic'：是 TypeScript 1.6 版本发布前使用的解析模式，不应再使用。
+
+## interface 接口
+
+- 接口： 用于描述对象，和类型别名有一些区别，比如约束类方面
+
+```ts
+interface User {
+  readonly id: number;
+  name: string;
+  age: number;
+  sayHello: () => void;
+  doSomething(): void;
+}
+
+// 接口的继承
+interface A {
+  t1: string;
+}
+interface B {
+  t2: string;
+}
+
+interface C extends A, B {
+  t3: string;
+}
+```
+
+- readonly 只读修饰符，属性是只读的不能修改
+
+```ts
+// 只读数组，这个数组的改变元素的方法都无法使用了
+const arr: readonly number[] = [1, 2, 3];
+```
+
+## 类型兼容性
+
+- 类型兼容性，如果 B 类型能够赋值给类型 A，则 B 和 A 类型就兼容了
+  - 鸭子辩型法 子结构辩型法，目标类型需要某些特征，而赋值的类型只要满足该特征即可，例如只要会嘎嘎叫并且会游泳就是鸭子
+  - 但是直接使用对象字面量赋值的时候，会进行更加严格的判断
+
+```ts
+interface Duck {
+  sound: '嘎嘎嘎';
+  swim(): void;
+}
+
+let person = {
+  name: '伪装成鸭子的人',
+  age: 11,
+  sound: '嘎嘎嘎' as '嘎嘎嘎',
+  swim() {
+    console.log(`${this.name}正在游泳并且发出了${this.sound}的声音`);
+  },
+};
+
+let duck: Duck = person;
+
+// 下面对象字面量直接赋值，ts 会直接报错
+let duck: Duck = {
+  name: '伪装成鸭子的人',
+  age: 11,
+  sound: '嘎嘎嘎' as '嘎嘎嘎',
+  swim() {
+    console.log(`${this.name}正在游泳并且发出了${this.sound}的声音`);
+  },
+};
+```
