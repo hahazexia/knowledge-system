@@ -483,3 +483,287 @@ let duck: Duck = {
   },
 };
 ```
+
+## 扑克牌小练习 interface
+
+- interface 改写扑克牌练习，加入大小王
+
+```ts
+enum Color {
+  heart = '♥',
+  spade = '♠',
+  club = '♣',
+  diamond = '♦',
+}
+enum Mark {
+  A = 'A',
+  two = '2',
+  three = '3',
+  four = '4',
+  five = '5',
+  six = '6',
+  seven = '7',
+  eight = '8',
+  nine = '9',
+  ten = '10',
+  jack = 'J',
+  queen = 'Q',
+  king = 'K',
+}
+
+interface Card {
+  getString(): string;
+}
+
+type Deck = Card[];
+
+interface NormalCard extends Card {
+  color: Color;
+  mark: Mark;
+}
+
+interface Joker extends Card {
+  type: 'big' | 'small';
+}
+
+function createDeck(): Deck {
+  const deck: Deck = [];
+  const marks = Object.values(Mark);
+  const colors = Object.values(Color);
+
+  for (const m of marks) {
+    for (const c of colors) {
+      deck.push({
+        color: c,
+        mark: m,
+        getString() {
+          return `${this.color}_${this.mark}`;
+        },
+      } as Card);
+    }
+  }
+  let joker: Joker = {
+    type: 'small',
+    getString() {
+      return 'small joker';
+    },
+  };
+  deck.push(joker);
+  joker = {
+    type: 'big',
+    getString() {
+      return 'big joker';
+    },
+  };
+  deck.push(joker);
+  return deck;
+}
+
+function printDeck(deck: Deck) {
+  let result = '\n';
+  deck.forEach((card, i) => {
+    result += card.getString() + '\t';
+    if ((i + 1) % 6 === 0) {
+      result += '\n';
+    }
+  });
+  console.log(result);
+}
+
+const deck = createDeck();
+printDeck(deck);
+```
+
+## 类
+
+- ts 要求使用属性列表描述类中的属性
+- "strictPropertyInitialization": true, // 更严格的属性初始化，必须在 constructor 中初始化属性
+- 属性的初始化有两个位置：构造函数中，属性默认值
+- 属性可以修饰为可选的
+- 属性可以修饰为只读的
+- 访问修饰符：控制类中的某个成员的访问权限
+  - public 默认的访问修饰符，所有地方都可以访问
+  - private 私有的，只能在类中访问
+  - protected
+- 属性简写：如果某个属性，通过构造函数参数传递，并且不做任何处理直接赋值给该属性，可以简写
+- 访问器：用于控制属性的赋值和取值
+
+```ts
+class User {
+  readonly id: number;
+  name: string;
+  _age: number;
+  gender: '男' | '女' = '男';
+  pid?: string;
+  private publishNumber: number = 3;
+  private currentNumber: number = 0;
+
+  constructor(name: string, age: number) {
+    this.id = Math.random();
+    this.name = name;
+    this._age = age;
+  }
+
+  set age(value: number) {
+    if (value < 0) {
+      this._age = 0;
+    } else if (value > 200) {
+      this._age = 200;
+    } else {
+      this._age = Math.floor(value);
+    }
+  }
+
+  get age() {
+    return this._age;
+  }
+
+  publish(title: string) {
+    if (this.currentNumber < this.publishNumber) {
+      console.log(`发布一篇文章: ${title}`);
+    } else {
+      console.log('发布文章已经到达上限');
+    }
+  }
+}
+
+const u = new User('test', 1);
+
+class Test {
+  // 属性简写，构造函数中的参数加上访问修饰符，就意味着定义了一个属性，构造函数接收参数后自动赋值给属性，不做其他修改
+  constructor(public name: string) {}
+}
+```
+
+## 扑克小游戏改成类写法
+
+```ts
+enum Color {
+  heart = '♥',
+  spade = '♠',
+  club = '♣',
+  diamond = '♦',
+}
+enum Mark {
+  A = 'A',
+  two = '2',
+  three = '3',
+  four = '4',
+  five = '5',
+  six = '6',
+  seven = '7',
+  eight = '8',
+  nine = '9',
+  ten = '10',
+  jack = 'J',
+  queen = 'Q',
+  king = 'K',
+}
+
+export class Deck {
+  private cards: Card[] = [];
+
+  constructor(cards?: Card[]) {
+    if (cards) {
+      this.cards = cards;
+    } else {
+      this._init();
+    }
+  }
+
+  private _init() {
+    const marks = Object.values(Mark);
+    const colors = Object.values(Color);
+
+    for (const m of marks) {
+      for (const c of colors) {
+        this.cards.push({
+          color: c,
+          mark: m,
+          getString() {
+            return `${this.color}_${this.mark}`;
+          },
+        } as NormalCard);
+      }
+    }
+    let joker: Joker = {
+      type: 'small',
+      getString() {
+        return 'small joker';
+      },
+    };
+    this.cards.push(joker);
+    joker = {
+      type: 'big',
+      getString() {
+        return 'big joker';
+      },
+    };
+    this.cards.push(joker);
+  }
+
+  print() {
+    let result = '\n';
+    this.cards.forEach((card, i) => {
+      result += card.getString() + '\t';
+      if ((i + 1) % 6 === 0) {
+        result += '\n';
+      }
+    });
+    console.log(result);
+  }
+
+  publish(): [Deck, Deck, Deck, Deck] {
+    let player1: Deck, player2: Deck, player3: Deck, left: Deck;
+    player1 = this.takeCards(17);
+    player2 = this.takeCards(17);
+    player3 = this.takeCards(17);
+    left = new Deck(this.cards);
+    return [player1, player2, player3, left];
+  }
+
+  private takeCards(n: number): Deck {
+    const cards: Card[] = [];
+    for (let i = 0; i < n; i++) {
+      cards.push(this.cards.shift() as Card);
+    }
+    return new Deck(cards);
+  }
+
+  shuffle() {
+    for (let i = 0; i < this.cards.length; i++) {
+      const index = this.getRandom(0, this.cards.length);
+      [this.cards[i], this.cards[index]] = [this.cards[index], this.cards[i]];
+    }
+  }
+
+  private getRandom(min: number, max: number) {
+    const dec = max - min;
+    return Math.floor(Math.random() * dec + min);
+  }
+}
+
+interface Card {
+  getString(): string;
+}
+
+
+interface NormalCard extends Card {
+  color: Color;
+  mark: Mark;
+}
+
+interface Joker extends Card {
+  type: 'big' | 'small';
+}
+
+const deck = new Deck();
+deck.shuffle();
+deck.print();
+const data = deck.publish();
+for (let i = 0; i < data.length; i++) {
+  data[i].print();
+}
+```
+
+## 泛型

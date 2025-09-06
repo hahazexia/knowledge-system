@@ -7,7 +7,8 @@
     "lib": ["ES2024"], // 编译过程中需要引入的库文件
     "outDir": "./dist", // 编译结果目录
     "strictNullChecks": true, // 更加严格的空值检测
-    "removeComments": true
+    "removeComments": true,
+    "strictPropertyInitialization": true, // 更严格的属性初始化，必须在 constructor 中初始化属性
   },
   "include": ["./src"] // 编译哪些目录下的 ts 文件
 }
