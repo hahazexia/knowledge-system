@@ -767,3 +767,67 @@ for (let i = 0; i < data.length; i++) {
 ```
 
 ## 泛型
+
+- 泛型相当于一个类型变量，在定义时，无法预先知道具体的类型，可以使用该变量来代替，只有调用时才能确定它的类型
+- ts 会根据传递的参数推导出泛型的具体类型，如果无法完成推导，并且也没有传递具体的类型，默认为空对象
+- 泛型可以设置默认值
+
+```ts
+function test<T = number>(arr: T[]){}
+```
+
+- 泛型约束
+
+```ts
+// 使用 extends 来约束泛型满足某种条件
+function test<T extends someType>(data: T){}
+```
+
+- 多泛型
+
+```ts
+// 将两个数组混合
+// [1, 3, 4] + ["a", "b", "c"] = [1, "a", 3, "b", 4, "c"]
+function mixinArr<T, K>(arr1: T[], arr2: K[]): (T | K)[] {}
+```
+
+- 小练习实现一个字典类
+
+```ts
+type Callback<K, V> = (key: K, val: V) => void;
+
+class Dictionary<K, V> {
+  private keys: K[] = [];
+  private vals: V[] = [];
+
+  set(key: K, val: V) {
+    const i = this.keys.indexOf(key);
+    if (i < 0) {
+      this.keys.push(key);
+      this.vals.push(val);
+    } else {
+      this.vals[i] = val;
+    }
+  }
+
+  forEach(callback: Callback<K, V>) {
+    this.keys.forEach((k, i) => {
+      const v = this.vals[i];
+      callback(k, v);
+    });
+  }
+
+  has(k: K): boolean {
+    return this.keys.includes(k);
+  }
+
+  delete(k: K) {
+    const i = this.keys.indexOf(k);
+    if (i === -1) {
+      return;
+    }
+    this.keys.splice(i, 1);
+    this.vals.splice(i, 1);
+  }
+}
+```
