@@ -68,6 +68,7 @@
       - [flex](./html_css/flex.md)
       - [居中问题](./html_css/in_the_middle.md)
       - [常见布局](./html_css/familiar_layout.md)
+      - [布局小技巧](./html_css/layout_skill.md)
     - [绘制]()
       - [文字相关]()
       - [动画]()
