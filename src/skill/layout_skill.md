@@ -7,4 +7,4 @@
   - margin: auto 可以同时作用于水平和垂直方向，实现完美居中
   - 可以为多个元素设置不同的 auto margin，实现复杂的空间分配
 
-[flex_skill](../../code/html_css_example/flex_skill.html)
+[flex_skill](../../code/skill_example/flex_skill.html)

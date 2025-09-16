@@ -68,7 +68,6 @@
       - [flex](./html_css/flex.md)
       - [居中问题](./html_css/in_the_middle.md)
       - [常见布局](./html_css/familiar_layout.md)
-      - [布局小技巧](./html_css/layout_skill.md)
     - [绘制]()
       - [文字相关]()
       - [动画]()
@@ -208,6 +207,7 @@
   - [基础](./typescript/base_type.md)
 
 - [前端实践]()
+
   - [ESLint 代码规范](./frontend_practice/eslint.md)
   - [stylelint 代码规范](./frontend_practice/stylelint.md)
   - [prettier 代码规范](./frontend_practice/prettier.md)
@@ -223,3 +223,7 @@
   - [typescript 和 react 最佳实践](./frontend_practice/ts_react.md)
   - [通用并发控制函数](./frontend_practice/concurrency.md)
   - [ssr]()
+
+- [小技巧]()
+  - [布局小技巧](./skill/layout_skill.md)
+  - [js 小技巧](./skill/js_skill.md)
