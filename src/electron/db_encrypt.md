@@ -442,6 +442,14 @@ H4 --> H5[将 16 字节 IV 与密文拼接，作为最终加密结果]
     "rebuild-release": "npm run lzz && npm run build-release"
   ```
 
+- 最后在我们的项目中需要加这样一个命令，用于重新编译原生模块。这里需要注意的是 `--build-from-source` 参数，这个必须加上，否则 `@electron-rebuild` 重新编译的时候就会读取缓存不会重新从源码编译
+
+  ```json
+  {
+    "rebuild:sqlite": "electron-rebuild --version 37.2.4 --module-dir ./src/main/better-sqlite3-multiple-ciphers -f --build-from-source && copyfiles -u 5 ./src/main/better-sqlite3-multiple-ciphers/build/Release/better_sqlite3.node ./Release"
+  }
+  ```
+
 ## 参考链接
 
 - [better-sqlite3-multiple-ciphers](https://www.npmjs.com/package/better-sqlite3-multiple-ciphers)
