@@ -128,7 +128,7 @@ H4 --> H5[将 16 字节 IV 与密文拼接，作为最终加密结果]
   #include "key.h"
   ```
 
-  - 入口文件 `better_sqlite3.lzz` 引入使用到的头文件，并且修改 `binding.gyp` 配置文件，因为 AES 的解密会用到 openssl，需要引入 openssl 的头文件，因此需要在系统上安装 openssl，windows 的版本在这里下载 [https://slproweb.com/products/Win32OpenSSL.html](https://slproweb.com/products/Win32OpenSSL.html)
+- 入口文件 `better_sqlite3.lzz` 引入使用到的头文件，并且修改 `binding.gyp` 配置文件，因为 AES 的解密会用到 openssl，需要引入 openssl 的头文件，因此需要在系统上安装 openssl，windows 的版本在这里下载 [https://slproweb.com/products/Win32OpenSSL.html](https://slproweb.com/products/Win32OpenSSL.html)
 
   ```c++
   #include <openssl/aes.h>
