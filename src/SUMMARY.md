@@ -200,6 +200,7 @@
   - [集成 sqlite 数据库](./electron/sqlite.md)
   - [数据库升级问题](./electron/db_update_issue.md)
   - [数据库加密](./electron/db_encrypt.md)
+  - [开机自启动](./electron/auto_start_up.md)
 
 - [typescript]()
 
